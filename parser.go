@@ -7,21 +7,20 @@ import (
 
 func parse(tokens []Token) AST {
 	var ast AST
-	var stack []CallNode
+	var stack []*CallNode
 	initialEmptyCallNode := CallNode{}
 	var currentCall *CallNode = &initialEmptyCallNode
 
 	for _, token := range tokens {
 		switch token.Type {
 		case LPAREN:
-			if currentCall != &initialEmptyCallNode {
-				stack = append(stack, *currentCall)
-			}
+			stack = append(stack, currentCall)
 			currentCall = &CallNode{}
 		case RPAREN:
-			if len(stack) > 0 {
+			util.Invariant(len(stack) > 0, "unbalanced parentheses %v", tokens)
+			if stack[len(stack)-1] != &initialEmptyCallNode {
 				last := currentCall
-				currentCall = &stack[len(stack)-1]
+				currentCall = stack[len(stack)-1]
 				stack = stack[:len(stack)-1]
 				currentCall.Args = append(currentCall.Args, last)
 			}
@@ -32,7 +31,7 @@ func parse(tokens []Token) AST {
 		}
 	}
 
-	util.Invariant(len(stack) == 0, "unbalanced parentheses")
+	util.Invariant(len(stack) == 1, "unbalanced parentheses %v, len(stack)=%d", tokens, len(stack))
 	ast.Root = currentCall
 	return ast
 }
