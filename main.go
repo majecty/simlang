@@ -8,8 +8,29 @@ func main() {
 	fmt.Println(parse(tokenize("(hello world)")))
 }
 
+type TokenType int
+
+const (
+	LPAREN TokenType = iota
+	RPAREN
+	ATOM
+)
+
+func (t TokenType) String() string {
+	switch t {
+	case LPAREN:
+		return "LPAREN"
+	case RPAREN:
+		return "RPAREN"
+	case ATOM:
+		return "ATOM"
+	default:
+		return "UNKNOWN"
+	}
+}
+
 type Token struct {
-	Type  string
+	Type  TokenType
 	Value string
 }
 
@@ -22,16 +43,16 @@ func tokenize(input string) []Token {
 
 		switch ch {
 		case '(':
-			tokens = append(tokens, Token{"LPAREN", "("})
+			tokens = append(tokens, Token{LPAREN, "("})
 		case ')':
 			if current != "" {
-				tokens = append(tokens, Token{"ATOM", current})
+				tokens = append(tokens, Token{ATOM, current})
 				current = ""
 			}
-			tokens = append(tokens, Token{"RPAREN", ")"})
+			tokens = append(tokens, Token{RPAREN, ")"})
 		case ' ', '\n', '\t':
 			if current != "" {
-				tokens = append(tokens, Token{"ATOM", current})
+				tokens = append(tokens, Token{ATOM, current})
 				current = ""
 			}
 		default:
@@ -49,17 +70,17 @@ func parse(tokens []Token) []any {
 
 	for _, token := range tokens {
 		switch token.Type {
-		case "LPAREN":
+		case LPAREN:
 			stack = append(stack, current)
 			current = []any{}
-		case "RPAREN":
+		case RPAREN:
 			if len(stack) > 0 {
 				last := current
 				current = stack[len(stack)-1]
 				stack = stack[:len(stack)-1]
 				current = append(current, last)
 			}
-		case "ATOM":
+		case ATOM:
 			current = append(current, token.Value)
 		}
 	}
