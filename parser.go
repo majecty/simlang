@@ -1,6 +1,7 @@
 package main
 
 import (
+	"simlang/util"
 	"strconv"
 )
 
@@ -31,9 +32,7 @@ func parse(tokens []Token) AST {
 		}
 	}
 
-	if len(stack) != 0 {
-		panic("unbalanced parentheses")
-	}
+	util.Invariant(len(stack) == 0, "unbalanced parentheses")
 	ast.Root = currentCall
 	return ast
 }
