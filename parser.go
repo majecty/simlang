@@ -31,6 +31,9 @@ func parse(tokens []Token) AST {
 		}
 	}
 
+	if len(stack) != 0 {
+		panic("unbalanced parentheses")
+	}
 	ast.Root = currentCall
 	return ast
 }
