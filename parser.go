@@ -7,12 +7,13 @@ import (
 func parse(tokens []Token) AST {
 	var ast AST
 	var stack []CallNode
-	var currentCall *CallNode = nil
+	initialEmptyCallNode := CallNode{}
+	var currentCall *CallNode = &initialEmptyCallNode
 
 	for _, token := range tokens {
 		switch token.Type {
 		case LPAREN:
-			if currentCall != nil {
+			if currentCall != &initialEmptyCallNode {
 				stack = append(stack, *currentCall)
 			}
 			currentCall = &CallNode{}
