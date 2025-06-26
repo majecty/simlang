@@ -1,5 +1,10 @@
 package main
 
+type Token struct {
+	Type  TokenType
+	Value string
+}
+
 type TokenType int
 
 const (
@@ -22,9 +27,4 @@ func (t TokenType) String() string {
 	default:
 		return "UNKNOWN"
 	}
-}
-
-type Token struct {
-	Type  TokenType
-	Value string
 }
