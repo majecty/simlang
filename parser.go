@@ -1,29 +1,46 @@
 package main
 
-func parse(tokens []Token) []any {
-	var ast []any
-	var stack [][]any
-	current := []any{}
+import (
+	"strconv"
+)
+
+func parse(tokens []Token) AST {
+	var ast AST
+	var stack []CallNode
+	var currentCall *CallNode = nil
 
 	for _, token := range tokens {
 		switch token.Type {
 		case LPAREN:
-			stack = append(stack, current)
-			current = []any{}
+			if currentCall != nil {
+				stack = append(stack, *currentCall)
+			}
+			currentCall = &CallNode{}
 		case RPAREN:
 			if len(stack) > 0 {
-				last := current
-				current = stack[len(stack)-1]
+				last := currentCall
+				currentCall = &stack[len(stack)-1]
 				stack = stack[:len(stack)-1]
-				current = append(current, last)
+				currentCall.Args = append(currentCall.Args, last)
 			}
 		case ATOM:
-			current = append(current, token.Value)
+			currentCall.Push(&SymbolNode{Name: token.Value})
 		case NUMBER:
-			current = append(current, token.Value)
+			currentCall.Push(&NumberNode{Value: parseFloat64(token.Value)})
 		}
 	}
 
-	ast = current
+	ast.Root = currentCall
 	return ast
+}
+
+func parseFloat64(value string) float64 {
+	if value == "" {
+		return 0
+	}
+	f, err := strconv.ParseFloat(value, 64)
+	if err != nil {
+		panic(err)
+	}
+	return f
 }

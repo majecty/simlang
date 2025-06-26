@@ -1,80 +1,40 @@
 package main
 
-func eval(ast []any) any {
-	if len(ast) == 0 {
-		return nil
-	}
-
-	// 단일 요소인 경우
-	if len(ast) == 1 {
-		return evalSingle(ast[0])
-	}
-
-	// 리스트인 경우 첫 번째 요소가 함수/연산자
-	first := ast[0]
-
-	switch first {
-	case "+":
-		return evalAdd(ast[1:])
-	default:
-		// 다른 함수들은 나중에 구현
-		return ast
-	}
+func eval(ast AST) any {
+	return evalSingle(ast.Root)
 }
 
-func evalSingle(item any) any {
+func evalSingle(item ASTNode) any {
 	switch v := item.(type) {
-	case string:
-		// 숫자 문자열을 정수로 변환
-		if isNumber(v) {
-			if num := parseInt(v); num != nil {
-				return *num
+	case *NumberNode:
+		return v.Value
+	case *SymbolNode:
+		return v.Name
+	case *CallNode:
+		switch function := v.Function.(type) {
+		case *SymbolNode:
+			switch function.Name {
+			case "+":
+				return evalAdd(v.Args)
+			default:
+				return item
 			}
+		default:
+			return item
 		}
-		return v
-	case []any:
-		// 중첩된 리스트를 재귀적으로 평가
-		return eval(v)
 	default:
 		return v
 	}
 }
 
-func evalAdd(args []any) int {
-	sum := 0
+func evalAdd(args []ASTNode) float64 {
+	var sum float64
+	sum = 0
 	for _, arg := range args {
 		evaluated := evalSingle(arg)
-		if num, ok := evaluated.(int); ok {
+		if num, ok := evaluated.(float64); ok {
 			sum += num
 		}
 	}
 	return sum
-}
-
-func parseInt(s string) *int {
-	if !isNumber(s) {
-		return nil
-	}
-
-	result := 0
-	negative := false
-	start := 0
-
-	if s[0] == '-' {
-		negative = true
-		start = 1
-	} else if s[0] == '+' {
-		start = 1
-	}
-
-	for i := start; i < len(s); i++ {
-		digit := int(s[i] - '0')
-		result = result*10 + digit
-	}
-
-	if negative {
-		result = -result
-	}
-
-	return &result
 }
