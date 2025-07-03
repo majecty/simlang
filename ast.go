@@ -40,6 +40,7 @@ func (n NumberNode) String() string {
 func (n SymbolNode) String() string {
 	return fmt.Sprintf("Symbol(%s)", n.Name)
 }
+
 func (n CallNode) String() string {
 	args := make([]string, len(n.Args))
 	for i, arg := range n.Args {

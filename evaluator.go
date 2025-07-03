@@ -1,6 +1,6 @@
 package main
 
-func eval(ast AST) any {
+func eval(ast *AST) any {
 	return evalSingle(ast.Root)
 }
 

@@ -8,25 +8,57 @@ func main() {
 	fmt.Println(parse(tokenize("(hello world)")))
 
 	// 덧셈 테스트
-	result := eval(parse(tokenize("(+ 1 2 3)")))
-	fmt.Println("(+ 1 2 3) =", result)
+	if result, err := parse(tokenize("(+ 1 2)")); err != nil {
+    panic(err)
+  } else {
+    fmt.Println("(+ 1 2) =", eval(result))
+	}
 
-	result2 := eval(parse(tokenize("(+ 10 (+ 5 3) 2)")))
-	fmt.Println("(+ 10 (+ 5 3) 2) =", result2)
+	if result, err := parse(tokenize("(+ 1 2 3)")); err != nil {
+		panic(err)
+	} else  {
+    fmt.Println("(+ 1 2 3) =", eval(result))
+	}
 
-	// 더 많은 덧셈 테스트 케이스
-	result3 := eval(parse(tokenize("(+ -5 10)")))
-	fmt.Println("(+ -5 10) =", result3)
+	if rsult, err := parse(tokenize("(+ 10 (+ 5 3) 2)")); err != nil {
+    panic(err)
+  } else {
+    fmt.Println("(+ 10 (+ 5 3) 2) =", eval(rsult))
+  }
 
-	result4 := eval(parse(tokenize("(+ 0 0 0)")))
-	fmt.Println("(+ 0 0 0) =", result4)
+	if result, err := parse(tokenize("(+ -5 10)")); err != nil {
+    panic(err)
+  } else {
+    fmt.Println("(+ -5 10) =", eval(result))
+  }
 
-	result5 := eval(parse(tokenize("(+ 100 -50 25)")))
-	fmt.Println("(+ 100 -50 25) =", result5)
+  if result, err := parse(tokenize("(+ 0 0 0)")); err != nil {
+    panic(err)
+  } else {
+    fmt.Println("(+ 0 0 0) =", eval(result))
+  }
 
-	result6 := eval(parse(tokenize("(+ (+ 1 2) (+ 3 4) (+ 5 6))")))
-	fmt.Println("(+ (+ 1 2) (+ 3 4) (+ 5 6)) =", result6)
+	if result, err := parse(tokenize("(+ 100 -50 25)")); err != nil {
+    panic(err)
+  } else {
+    fmt.Println("(+ 100 -50 25) =", eval(result))
+  }
 
-	result7 := eval(parse(tokenize("(+ 42)")))
-	fmt.Println("(+ 42) =", result7)
+	if result, err := parse(tokenize("(+ (+ 1 2) (+ 3 4) (+ 5 6))")); err != nil {
+    panic(err)
+	} else {
+    fmt.Println("(+ (+ 1 2) (+ 3 4) (+ 5 6)) =", eval(result))
+  }
+
+	if result, err := parse(tokenize("(+ 42)")); err != nil {
+    panic(err)
+  } else {
+    fmt.Println("(+ 42) =", eval(result))
+  }
+
+	if result, err := parse(tokenize("(let (x 10) in x)")); err != nil {
+    panic(err)
+  } else {
+    fmt.Println("(let (x 10) in x) =", eval(result))
+  }
 }
