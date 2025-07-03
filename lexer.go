@@ -34,6 +34,12 @@ func createToken(value string) Token {
 	if isNumber(value) {
 		return Token{NUMBER, value}
 	}
+
+	switch value {
+	case "let":
+    return Token{LET, value}
+	}
+
 	return Token{ATOM, value}
 }
 

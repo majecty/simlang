@@ -12,6 +12,7 @@ const (
 	RPAREN
 	ATOM
 	NUMBER
+	LET
 )
 
 func (t TokenType) String() string {
@@ -24,6 +25,8 @@ func (t TokenType) String() string {
 		return "ATOM"
 	case NUMBER:
 		return "NUMBER"
+	case LET:
+    return "LET"
 	default:
 		return "UNKNOWN"
 	}
