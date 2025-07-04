@@ -71,7 +71,7 @@ func parseSingle(parsingContext *ParsingContext) (ASTNode, error) {
 	case ATOM:
     return &SymbolNode{Name: parsingContext.consume().Value}, nil
 	case LET:
-	  return nil, fmt.Errorf("invalid let, there should be lparentheses or value %v")
+	  return nil, fmt.Errorf("invalid let, there should be lparentheses or value")
 	case NUMBER:
     return &NumberNode{Value: parseFloat64(parsingContext.consume().Value)}, nil
 	case RPAREN:
