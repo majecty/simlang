@@ -9,7 +9,6 @@ tasks:
   run:
     cmds:
       - go run .
-  default:
+  llvm:
     cmds:
-      - echo "{{.GREETING}}"
-    silent: true
+      - go run ./llvm/main
