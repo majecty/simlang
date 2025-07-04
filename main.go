@@ -61,4 +61,16 @@ func main() {
   } else {
     fmt.Println("(let (x 10) in x) =", eval(result))
   }
+
+  if result, err := parse(tokenize("(let (x 10) in (let (y 20) in (+ x y)))")); err != nil {
+    panic(err)
+  } else {
+    fmt.Println("(let (x 10) in (let (y 20) in (+ x y))) =", eval(result))
+  }
+
+	if result, err := parse(tokenize("(let (x 10) in (let (x 20) in x))")); err != nil {
+    panic(err)
+  } else {
+    fmt.Println("(let (x 10) in (let (x 20) in x)) =", eval(result))
+  }
 }
