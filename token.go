@@ -13,6 +13,7 @@ const (
 	ATOM
 	NUMBER
 	LET
+	IN // let in
 )
 
 func (t TokenType) String() string {
@@ -27,6 +28,8 @@ func (t TokenType) String() string {
 		return "NUMBER"
 	case LET:
     return "LET"
+	case IN:
+    return "IN"
 	default:
 		return "UNKNOWN"
 	}

@@ -97,6 +97,7 @@ func parseFromLParen(parsingContext *ParsingContext) (ASTNode, error) {
 		return funcCallNode, nil
 	case LET:
 		parsingContext.back()
+		parsingContext.back()
 		letValueNode, err := parseLetValue(parsingContext)
 		if err != nil {
 			return nil, fmt.Errorf("failed to parse let value: %w", err)
@@ -150,7 +151,7 @@ func parseFunctionCall(parsingContext *ParsingContext) (*CallNode, error) {
 func discardLParen(parsingContext *ParsingContext) error {
   token := parsingContext.consume()
   if token.Type != LPAREN {
-    return fmt.Errorf("expected lparent but get:  %v", token)
+    return fmt.Errorf("expected lparen but get:  %v", token)
   }
   return nil
 }
@@ -163,7 +164,45 @@ func parseSymbol(parsingContext *ParsingContext) (*SymbolNode, error) {
   return &SymbolNode{Name: token.Value}, nil
 }
 
-func parseLetValue(parsingContext *ParsingContext) (*SymbolNode, error) {
-	// TODO
-	return nil, nil
+// (let (x 10) in x)
+func parseLetValue(parsingContext *ParsingContext) (ASTNode, error) {
+  if err := discardLParen(parsingContext); err != nil { return nil, fmt.Errorf("failed to parse let value: %w", err) }
+	if err := discardLet(parsingContext); err != nil { return nil, fmt.Errorf("failed to parse let value: %w", err) }
+	if err := discardLParen(parsingContext); err != nil { return nil, fmt.Errorf("failed to parse let value: %w", err) }
+
+	envVariableName, err := parseSymbol(parsingContext)
+	if err != nil { return nil, fmt.Errorf("failed to parse let value, while parsing env variable name: %w", err) }
+
+	envVariableValue, err := parseSingle(parsingContext)
+  if err != nil { return nil, fmt.Errorf("failed to parse let value, while parsing env variable value: %w", err) }
+  if err := discardRParen(parsingContext); err != nil { return nil, fmt.Errorf("failed to parse let value: %w", err) }
+
+	if err := discardIN(parsingContext); err != nil { return nil, fmt.Errorf("failed to parse let value, try to discard 'in': %w", err) } // discardIN(parsingContext)
+
+	body, err := parseSingle(parsingContext)
+  if err != nil { return nil, fmt.Errorf("failed to parse let value, while parsing body: %w", err) }
+  if err := discardRParen(parsingContext); err != nil { return nil, fmt.Errorf("failed to parse let value, try consume last rparen: %w", err) }
+
+	return &LetNode{
+		LetEnv: map[string]ASTNode{envVariableName.Name: envVariableValue},
+		Body: body,
+	}, nil
+}
+
+func discardLet(parsingContext *ParsingContext) error {
+  token := parsingContext.consume()
+  if token.Type != LET {
+    return fmt.Errorf("expected let but get:  %v", token)
+  }
+
+  return nil
+}
+
+func discardIN(parsingContext *ParsingContext) error {
+  token := parsingContext.consume()
+  if token.Type != IN {
+    return fmt.Errorf("expected in but get:  %v", token)
+  }
+
+  return nil
 }

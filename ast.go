@@ -27,12 +27,15 @@ type CallNode struct {
 	Args     []ASTNode
 }
 
-func (n *NumberNode) astNode() {
+type LetNode struct {
+	LetEnv map[string]ASTNode
+  Body   ASTNode
 }
-func (n *SymbolNode) astNode() {
-}
-func (n *CallNode) astNode() {
-}
+
+func (n *NumberNode) astNode() {}
+func (n *SymbolNode) astNode() {}
+func (n *CallNode) astNode() {}
+func (n *LetNode) astNode() {}
 
 func (n *NumberNode) String() string {
 	return fmt.Sprintf("Number(%f)", n.Value)
@@ -55,4 +58,8 @@ func (n *CallNode) Push(arg ASTNode) {
 	} else {
 		n.Args = append(n.Args, arg)
 	}
+}
+
+func (n *LetNode) String() string {
+  return fmt.Sprintf("Let(%s, %s)", n.LetEnv, n.Body.String())
 }
