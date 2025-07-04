@@ -73,4 +73,10 @@ func main() {
   } else {
     fmt.Println("(let (x 10) in (let (x 20) in x)) =", eval(result))
   }
+
+	if result, err := parse(tokenize("(let (add2 (lambda (x) (+ x 2))) in (add2 10))")); err != nil {
+    panic(err)
+  } else {
+    fmt.Println("(let (add2 (lambda (x) (+ x 2))) in (add2 10)) =", eval(result))
+  }
 }
