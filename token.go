@@ -14,6 +14,7 @@ const (
 	NUMBER
 	LET
 	IN // let in
+	LAMBDA
 )
 
 func (t TokenType) String() string {
@@ -30,6 +31,8 @@ func (t TokenType) String() string {
     return "LET"
 	case IN:
     return "IN"
+  case LAMBDA:
+    return "LAMBDA"
 	default:
 		return "UNKNOWN"
 	}

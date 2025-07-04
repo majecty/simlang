@@ -1,5 +1,7 @@
 package main
 
+import "fmt"
+
 type Env struct {
 	EnvMap map[string]any
 	parent *Env
@@ -15,47 +17,75 @@ func (e *Env) Get(name string) any {
   return nil
 }
 
-func eval(ast *AST) any {
-	return evalSingle(ast.Root, &Env{EnvMap: make(map[string]any)})
+func eval(ast *AST) (any, error) {
+	var defaultEnv = &Env{EnvMap: make(map[string]any)}
+	defaultEnv.EnvMap["+"] = func (args []any) (any, error) {
+		resultSum := 0.0
+		for _, arg := range args {
+			if num, ok := arg.(float64); ok {
+				resultSum += num
+			}
+		}
+		return resultSum, nil
+	}
+
+	if result, err := evalSingle(ast.Root, defaultEnv); err != nil {
+		return nil, fmt.Errorf("failed to eval: %w, original input is %+v", err, ast)
+	} else {
+    return result, nil
+  }
 }
 
-func evalSingle(item ASTNode, env *Env) any {
+func evalSingle(item ASTNode, env *Env) (any, error) {
 	switch v := item.(type) {
 	case *NumberNode:
-		return v.Value
+		return v.Value, nil
 	case *SymbolNode:
-		return env.Get(v.Name)
+		return env.Get(v.Name), nil
 	case *CallNode:
 		switch function := v.Function.(type) {
 		case *SymbolNode:
-			switch function.Name {
-			case "+":
-				return evalAdd(v.Args, env)
-			default:
-				return item
-			}
+			evalutedArgs := make([]any, 0)
+		  for _, arg := range v.Args {
+        evaluatedArg, err := evalSingle(arg, env)
+        if err != nil {
+          return nil, fmt.Errorf("failed to eval call: %w", err)
+        }
+				evalutedArgs = append(evalutedArgs, evaluatedArg)
+		  }
+
+			f := env.Get(function.Name)
+      if f == nil {
+        return nil, fmt.Errorf("failed to eval call, function %s not found", function.Name)
+      }
+
+      return f.(func([]any) (any, error))(evalutedArgs)
 		default:
-			return item
+			return item, nil
 		}
 	case *LetNode:
 		executedEnv := make(map[string]any)
 		for key, value := range v.LetEnv {
-      executedEnv[key] = evalSingle(value, &Env{EnvMap: executedEnv, parent: env})
+			evalResult, err := evalSingle(value, &Env{EnvMap: executedEnv, parent: env})
+			if err != nil {
+        return nil, fmt.Errorf("failed to eval let value: %w", err)
+      }
+			executedEnv[key] = evalResult
 		}
-    return evalSingle(v.Body, &Env{EnvMap: executedEnv, parent: env})
+		return evalSingle(v.Body, &Env{EnvMap: executedEnv, parent: env})
+	case *LambdaNode:
+		return func(args []any) (any, error) {
+			if len(args) != len(v.Args) {
+				return nil, fmt.Errorf("expected %d arguments, got %d, args: %+v", len(v.Args), len(args), args)
+      }
+      executedEnv := make(map[string]any)
+      for i, arg := range args {
+        executedEnv[v.Args[i].Name] = arg
+      }
+      return evalSingle(v.Body, &Env{EnvMap: executedEnv, parent: env})
+    }, nil
 	default:
-		return v
+		return v, nil
 	}
 }
 
-func evalAdd(args []ASTNode, env *Env) float64 {
-	var sum float64
-	sum = 0
-	for _, arg := range args {
-		evaluated := evalSingle(arg, env)
-		if num, ok := evaluated.(float64); ok {
-			sum += num
-		}
-	}
-	return sum
-}

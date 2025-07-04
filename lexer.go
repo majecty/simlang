@@ -40,6 +40,8 @@ func createToken(value string) Token {
     return Token{LET, value}
 	case "in":
     return Token{IN, value}
+	case "lambda":
+    return Token{LAMBDA, value}
 	}
 
 	return Token{ATOM, value}
