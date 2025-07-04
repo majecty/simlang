@@ -27,21 +27,21 @@ type CallNode struct {
 	Args     []ASTNode
 }
 
-func (n NumberNode) astNode() {
+func (n *NumberNode) astNode() {
 }
-func (n SymbolNode) astNode() {
+func (n *SymbolNode) astNode() {
 }
-func (n CallNode) astNode() {
+func (n *CallNode) astNode() {
 }
 
-func (n NumberNode) String() string {
+func (n *NumberNode) String() string {
 	return fmt.Sprintf("Number(%f)", n.Value)
 }
-func (n SymbolNode) String() string {
+func (n *SymbolNode) String() string {
 	return fmt.Sprintf("Symbol(%s)", n.Name)
 }
 
-func (n CallNode) String() string {
+func (n *CallNode) String() string {
 	args := make([]string, len(n.Args))
 	for i, arg := range n.Args {
 		args[i] = arg.String()
