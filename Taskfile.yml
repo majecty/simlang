@@ -9,6 +9,10 @@ tasks:
   run:
     cmds:
       - go run .
+  llvm1:
+    cmds:
+      - go run ./llvm/llvmSample1
+      - lli ./output.ll
   llvm:
     cmds:
       - go run ./llvm/main

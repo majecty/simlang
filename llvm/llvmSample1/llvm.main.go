@@ -12,9 +12,13 @@ func main() {
 
 	llvmIR := `; ModuleID = 'simple_module'
 source_filename = "simple_program.ll"
+declare i32 @printf(ptr, ...)
+
+@pat = global [14 x i8] c"answer is %d\0A\00"
 
 define i32 @main() {
-  ret i32 42
+  %ret = call i32 (ptr, ...) @printf(ptr @pat, i32 100)
+  ret i32 0
 }`
 
 	filename := "output.ll"
@@ -37,5 +41,4 @@ define i32 @main() {
 	}
 
 	log.Printf("Successfully wrote LLVM IR to %s", filename)
-
 }
