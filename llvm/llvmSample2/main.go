@@ -1,6 +1,7 @@
 package main
 
 import (
+	"errors"
 	"fmt"
 	"log"
 	"os"
@@ -32,22 +33,30 @@ define i32 @main() {
 
 	filename := "output.ll"
 
+  if err := writeToFile(filename, llvmIR); err != nil {
+    log.Fatalf("Failed to write LLVM IR to file %s: %v", filename, err)
+  }
+	log.Printf("Successfully wrote LLVM IR to %s", filename)
+}
+
+func writeToFile(filename string, content string) (err error) {
 	// Create or open the file for writing
 	file, err := os.Create(filename)
 	if err != nil {
-		log.Fatalf("Failed to create file %s: %v", filename, err)
+		return fmt.Errorf("failed to create file %s: %v", filename, err)
 	}
+
 	defer func() {
 		if closeErr := file.Close(); closeErr != nil {
-			log.Printf("Error closing file %s: %v", filename, closeErr)
+			errors.Join(err, fmt.Errorf("error closing file %s: %v", filename, closeErr))
 		}
 	}()
 
 	// Write the LLVM IR string to the file
-	_, err = file.WriteString(llvmIR)
+	_, err = file.WriteString(content)
 	if err != nil {
-		log.Fatalf("Failed to write LLVM IR to file %s: %v", filename, err)
+		return fmt.Errorf("failed to write LLVM IR to file %s: %v", filename, err)
 	}
-
-	log.Printf("Successfully wrote LLVM IR to %s", filename)
+	return nil
 }
+
