@@ -3,26 +3,37 @@ package main
 import (
 	"errors"
 	"fmt"
+	"html/template"
 	"log"
 	"os"
+	"strings"
 )
 
 // https://llvm.org/docs/LangRef.html
 func main() {
 	fmt.Println("Hello, Go Project!")
 
-	llvmIR := `; ModuleID = 'simple_module'
+	functionBody := `
+	%1 = add i32 0, 1
+	%2 = add i32 0, 2
+	%3 = add i32 %1, %2
+
+	ret i32 %3
+	`
+
+	llvmIRTemplate := `; ModuleID = 'simple_module'
 source_filename = "simple_program.ll"
 declare i32 @printf(ptr, ...)
 
 @pat = global [14 x i8] c"answer is %d\0A\00"
 
 define i32 @foo() {
-	%1 = add i32 0, 1
-	%2 = add i32 0, 2
-	%3 = add i32 %1, %2
+	{{.functionBody}}
+;	%1 = add i32 0, 1
+;	%2 = add i32 0, 2
+;	%3 = add i32 %1, %2
 
-	ret i32 %3
+;	ret i32 %3
 }
 
 define i32 @main() {
@@ -30,6 +41,19 @@ define i32 @main() {
   %ret = call i32 (ptr, ...) @printf(ptr @pat, i32 %4)
   ret i32 0
 }`
+
+	t, err := template.New("llvmTemplate").Parse(llvmIRTemplate)
+  if err != nil {
+    log.Fatalf("Failed to create template: %v", err)
+  }
+	var llvmIRSB strings.Builder;
+  err = t.Execute(&llvmIRSB, map[string]any{
+    "functionBody": functionBody,
+  })
+	if err != nil {
+    log.Fatalf("Failed to execute template: %v", err)
+  }
+  llvmIR := llvmIRSB.String()
 
 	filename := "output.ll"
 
