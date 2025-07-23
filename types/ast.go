@@ -29,18 +29,18 @@ type CallNode struct {
 
 type LetNode struct {
 	LetEnv map[string]ASTNode
-  Body   ASTNode
+	Body   ASTNode
 }
 
 type LambdaNode struct {
-  Args []*SymbolNode
-  Body ASTNode
+	Args []*SymbolNode
+	Body ASTNode
 }
 
 func (n *NumberNode) astNode() {}
 func (n *SymbolNode) astNode() {}
-func (n *CallNode) astNode() {}
-func (n *LetNode) astNode() {}
+func (n *CallNode) astNode()   {}
+func (n *LetNode) astNode()    {}
 func (n *LambdaNode) astNode() {}
 
 func (n *NumberNode) String() string {
@@ -67,9 +67,9 @@ func (n *CallNode) Push(arg ASTNode) {
 }
 
 func (n *LetNode) String() string {
-  return fmt.Sprintf("Let(%s, %s)", n.LetEnv, n.Body.String())
+	return fmt.Sprintf("Let(%s, %s)", n.LetEnv, n.Body.String())
 }
 
 func (n *LambdaNode) String() string {
-  return fmt.Sprintf("Lambda(%s, %s)", n.Args, n.Body.String())
+	return fmt.Sprintf("Lambda(%s, %s)", n.Args, n.Body.String())
 }

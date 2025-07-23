@@ -28,11 +28,11 @@ func (t TokenType) String() string {
 	case NUMBER:
 		return "NUMBER"
 	case LET:
-    return "LET"
+		return "LET"
 	case IN:
-    return "IN"
-  case LAMBDA:
-    return "LAMBDA"
+		return "IN"
+	case LAMBDA:
+		return "LAMBDA"
 	default:
 		return "UNKNOWN"
 	}

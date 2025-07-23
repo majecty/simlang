@@ -4,7 +4,6 @@ import (
 	"simlang/types"
 )
 
-
 func Toknize(input string) []types.Token {
 	tokens := []types.Token{}
 	var current string
@@ -20,7 +19,7 @@ func Toknize(input string) []types.Token {
 				tokens = append(tokens, createToken(current))
 				current = ""
 			}
-			tokens = append(tokens, types.Token{Type: types.RPAREN, Value:  ")"})
+			tokens = append(tokens, types.Token{Type: types.RPAREN, Value: ")"})
 		case ' ', '\n', '\t':
 			if current != "" {
 				tokens = append(tokens, createToken(current))
@@ -44,12 +43,12 @@ func createToken(value string) types.Token {
 	case "let":
 		return types.Token{Type: types.LET, Value: value}
 	case "in":
-		return types.Token{Type: types.IN, Value:  value}
+		return types.Token{Type: types.IN, Value: value}
 	case "lambda":
-		return types.Token{Type: types.LAMBDA, Value:  value}
+		return types.Token{Type: types.LAMBDA, Value: value}
 	}
 
-	return types.Token{Type: types.ATOM, Value:  value}
+	return types.Token{Type: types.ATOM, Value: value}
 }
 
 func isNumber(s string) bool {
