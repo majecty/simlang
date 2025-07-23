@@ -7,11 +7,19 @@ import (
 	"log"
 	"os"
 	"strings"
+	"simlang/lexer"
+	"simlang/parser"
 )
 
 // https://llvm.org/docs/LangRef.html
 func main() {
 	fmt.Println("Hello, Go Project!")
+
+	if result, err := parser.Parse(lexer.Toknize("(+ 1 2)")); err != nil {
+		log.Fatalf("failed to parse %v", err)
+	} else {
+		fmt.Printf("parse result %v\n", result)
+	}
 
 	functionBody := `
 	%1 = add i32 0, 1
