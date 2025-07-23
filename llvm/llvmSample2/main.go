@@ -20,7 +20,20 @@ func main() {
 
 	ret i32 %3
 	`
+	llvmIR, err := fillTemplate(functionBody)
+	if err != nil {
+		log.Fatalf("failed to fill template %v", err)
+	}
 
+	filename := "output.ll"
+
+  if err := writeToFile(filename, llvmIR); err != nil {
+    log.Fatalf("Failed to write LLVM IR to file %s: %v", filename, err)
+  }
+	log.Printf("Successfully wrote LLVM IR to %s", filename)
+}
+
+func fillTemplate(functionBody string) (string, error) {
 	llvmIRTemplate := `; ModuleID = 'simple_module'
 source_filename = "simple_program.ll"
 declare i32 @printf(ptr, ...)
@@ -44,23 +57,17 @@ define i32 @main() {
 
 	t, err := template.New("llvmTemplate").Parse(llvmIRTemplate)
   if err != nil {
-    log.Fatalf("Failed to create template: %v", err)
+    return "", fmt.Errorf("failed to create template: %v", err)
   }
 	var llvmIRSB strings.Builder;
   err = t.Execute(&llvmIRSB, map[string]any{
     "functionBody": functionBody,
   })
 	if err != nil {
-    log.Fatalf("Failed to execute template: %v", err)
+		return "", fmt.Errorf("failed to execute template: %v", err)
   }
   llvmIR := llvmIRSB.String()
-
-	filename := "output.ll"
-
-  if err := writeToFile(filename, llvmIR); err != nil {
-    log.Fatalf("Failed to write LLVM IR to file %s: %v", filename, err)
-  }
-	log.Printf("Successfully wrote LLVM IR to %s", filename)
+	return llvmIR, nil
 }
 
 func writeToFile(filename string, content string) (err error) {
