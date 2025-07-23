@@ -1,6 +1,7 @@
-package main
+package evaluator
 
 import "fmt"
+import "simlang/types"
 
 type Env struct {
 	EnvMap map[string]any
@@ -17,7 +18,7 @@ func (e *Env) Get(name string) any {
   return nil
 }
 
-func eval(ast *AST) (any, error) {
+func Eval(ast *types.AST) (any, error) {
 	var defaultEnv = &Env{EnvMap: make(map[string]any)}
 	defaultEnv.EnvMap["+"] = func (args []any) (any, error) {
 		resultSum := 0.0
@@ -36,15 +37,15 @@ func eval(ast *AST) (any, error) {
   }
 }
 
-func evalSingle(item ASTNode, env *Env) (any, error) {
+func evalSingle(item types.ASTNode, env *Env) (any, error) {
 	switch v := item.(type) {
-	case *NumberNode:
+	case *types.NumberNode:
 		return v.Value, nil
-	case *SymbolNode:
+	case *types.SymbolNode:
 		return env.Get(v.Name), nil
-	case *CallNode:
+	case *types.CallNode:
 		switch function := v.Function.(type) {
-		case *SymbolNode:
+		case *types.SymbolNode:
 			evalutedArgs := make([]any, 0)
 		  for _, arg := range v.Args {
         evaluatedArg, err := evalSingle(arg, env)
@@ -63,7 +64,7 @@ func evalSingle(item ASTNode, env *Env) (any, error) {
 		default:
 			return item, nil
 		}
-	case *LetNode:
+	case *types.LetNode:
 		executedEnv := make(map[string]any)
 		for key, value := range v.LetEnv {
 			evalResult, err := evalSingle(value, &Env{EnvMap: executedEnv, parent: env})
@@ -73,7 +74,7 @@ func evalSingle(item ASTNode, env *Env) (any, error) {
 			executedEnv[key] = evalResult
 		}
 		return evalSingle(v.Body, &Env{EnvMap: executedEnv, parent: env})
-	case *LambdaNode:
+	case *types.LambdaNode:
 		return func(args []any) (any, error) {
 			if len(args) != len(v.Args) {
 				return nil, fmt.Errorf("expected %d arguments, got %d, args: %+v", len(v.Args), len(args), args)

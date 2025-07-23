@@ -1,4 +1,4 @@
-package main
+package types
 
 type Token struct {
 	Type  TokenType

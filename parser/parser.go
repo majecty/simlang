@@ -1,18 +1,19 @@
-package main
+package parser
 
 import (
 	"errors"
 	"fmt"
 	"simlang/util"
 	"strconv"
+	"simlang/types"
 )
 
 type ParsingContext struct {
-	tokens []Token
+	tokens []types.Token
 	currentTokenIndex int
 }
 
-func (p *ParsingContext) currentToken() Token {
+func (p *ParsingContext) currentToken() types.Token {
   return p.tokens[p.currentTokenIndex]
 }
 
@@ -20,7 +21,7 @@ func (p *ParsingContext) hasNextToken() bool {
   return p.currentTokenIndex < len(p.tokens)
 }
 
-func (p *ParsingContext) consume() Token {
+func (p *ParsingContext) consume() types.Token {
 	if p.currentTokenIndex >= len(p.tokens) {
 		panic("unexpected end of input in consume")
   }
@@ -37,7 +38,7 @@ func (p *ParsingContext) back() {
   p.currentTokenIndex--
 }
 
-func parse(tokens []Token) (*AST, error) {
+func Parse(tokens []types.Token) (*types.AST, error) {
 	if (len(tokens) == 0) {
 		return nil, errors.New("empty input")
 	}
@@ -51,7 +52,7 @@ func parse(tokens []Token) (*AST, error) {
 		return nil, fmt.Errorf("node is parsed but tokens remains, node: %v", node)
 	}
 
-	return &AST{Root: node}, nil
+	return &types.AST{Root: node}, nil
 }
 
 func parseFloat64(value string) float64 {
@@ -65,25 +66,25 @@ func parseFloat64(value string) float64 {
 	return f
 }
 
-func parseSingle(parsingContext *ParsingContext) (ASTNode, error) {
+func parseSingle(parsingContext *ParsingContext) (types.ASTNode, error) {
 	switch parsingContext.currentToken().Type {
-	case LPAREN: return parseFromLParen(parsingContext)
-	case ATOM:
-    return &SymbolNode{Name: parsingContext.consume().Value}, nil
-	case NUMBER:
-    return &NumberNode{Value: parseFloat64(parsingContext.consume().Value)}, nil
+	case types.LPAREN: return parseFromLParen(parsingContext)
+	case types.ATOM:
+    return &types.SymbolNode{Name: parsingContext.consume().Value}, nil
+	case types.NUMBER:
+    return &types.NumberNode{Value: parseFloat64(parsingContext.consume().Value)}, nil
 	default:
 		return nil, fmt.Errorf("in parseSingle, unexpected main.TokenType %v", parsingContext.currentToken().Type.String())
 	}
 }
 
-func parseFromLParen(parsingContext *ParsingContext) (ASTNode, error) {
+func parseFromLParen(parsingContext *ParsingContext) (types.ASTNode, error) {
 	token := parsingContext.consume()
-	util.Invariant(token.Type == LPAREN, "invalid atom, there should be lparentheses %v", parsingContext.tokens)
+	util.Invariant(token.Type == types.LPAREN, "invalid atom, there should be lparentheses %v", parsingContext.tokens)
 
 	token = parsingContext.consume()
 	switch token.Type {
-	case ATOM:
+	case types.ATOM:
 		parsingContext.back()
 		parsingContext.back()
 		funcCallNode, err := parseFunctionCall(parsingContext)
@@ -91,7 +92,7 @@ func parseFromLParen(parsingContext *ParsingContext) (ASTNode, error) {
 			return nil, fmt.Errorf("failed to parse function call: %w", err)
 		}
 		return funcCallNode, nil
-	case LET:
+	case types.LET:
 		parsingContext.back()
 		parsingContext.back()
 		letValueNode, err := parseLetValue(parsingContext)
@@ -99,7 +100,7 @@ func parseFromLParen(parsingContext *ParsingContext) (ASTNode, error) {
 			return nil, fmt.Errorf("failed to parse let value: %w", err)
 		}
 		return letValueNode, nil
-	case LAMBDA:
+	case types.LAMBDA:
 		parsingContext.back()
 		parsingContext.back()
 		lambdaNode, err := parseLambda(parsingContext)
@@ -107,11 +108,11 @@ func parseFromLParen(parsingContext *ParsingContext) (ASTNode, error) {
 			return nil, fmt.Errorf("failed to parse lambda: %w", err)
 		}
 		return lambdaNode, nil
-	case NUMBER:
+	case types.NUMBER:
 		return nil, fmt.Errorf("there should be function call but found number %v", token)
-	case LPAREN:
+	case types.LPAREN:
 		return nil, fmt.Errorf("there should be function call but found lparen")
-	case RPAREN:
+	case types.RPAREN:
 		return nil, fmt.Errorf("invalid rparen, we are not supporting empty list")
 	default:
 		return nil, fmt.Errorf("unexpected main.TokenType: %#v", token.Type.String())
@@ -120,13 +121,13 @@ func parseFromLParen(parsingContext *ParsingContext) (ASTNode, error) {
 
 func discardRParen(parsingContext *ParsingContext) error {
   token := parsingContext.consume()
-	if token.Type != RPAREN {
+	if token.Type != types.RPAREN {
     return fmt.Errorf("expected rparent but get:  %v", token)
   }
   return nil
 }
 
-func parseFunctionCall(parsingContext *ParsingContext) (*CallNode, error) {
+func parseFunctionCall(parsingContext *ParsingContext) (*types.CallNode, error) {
 	if err := discardLParen(parsingContext); err != nil {
 		return nil, fmt.Errorf("failed to parse function call: %w", err)
 	}
@@ -136,8 +137,8 @@ func parseFunctionCall(parsingContext *ParsingContext) (*CallNode, error) {
     return nil, fmt.Errorf("failed to parse function call node: %w", err)
   }
 
-	args := make([]ASTNode, 0)
-	for parsingContext.currentToken().Type != RPAREN {
+	args := make([]types.ASTNode, 0)
+	for parsingContext.currentToken().Type != types.RPAREN {
 		argNode, err := parseSingle(parsingContext)
     if err != nil {
       return nil, fmt.Errorf("failed to parse function call arg: %w", err)
@@ -149,27 +150,27 @@ func parseFunctionCall(parsingContext *ParsingContext) (*CallNode, error) {
     return nil, fmt.Errorf("failed to parse function call, handling last rparen: %w", err)
   }
 
-	return &CallNode{Function: funcSymbolNode, Args: args}, nil
+	return &types.CallNode{Function: funcSymbolNode, Args: args}, nil
 }
 
 func discardLParen(parsingContext *ParsingContext) error {
   token := parsingContext.consume()
-  if token.Type != LPAREN {
+  if token.Type != types.LPAREN {
     return fmt.Errorf("expected lparen but get:  %v", token)
   }
   return nil
 }
 
-func parseSymbol(parsingContext *ParsingContext) (*SymbolNode, error) {
+func parseSymbol(parsingContext *ParsingContext) (*types.SymbolNode, error) {
   token := parsingContext.consume()
-  if token.Type != ATOM {
+  if token.Type != types.ATOM {
     return nil, fmt.Errorf("expected atom but get:  %v", token)
   }
-  return &SymbolNode{Name: token.Value}, nil
+  return &types.SymbolNode{Name: token.Value}, nil
 }
 
 // (let (x 10) in x)
-func parseLetValue(parsingContext *ParsingContext) (ASTNode, error) {
+func parseLetValue(parsingContext *ParsingContext) (types.ASTNode, error) {
   if err := discardLParen(parsingContext); err != nil { return nil, fmt.Errorf("failed to parse let value: %w", err) }
 	if err := discardLet(parsingContext); err != nil { return nil, fmt.Errorf("failed to parse let value: %w", err) }
 	if err := discardLParen(parsingContext); err != nil { return nil, fmt.Errorf("failed to parse let value: %w", err) }
@@ -187,15 +188,15 @@ func parseLetValue(parsingContext *ParsingContext) (ASTNode, error) {
   if err != nil { return nil, fmt.Errorf("failed to parse let value, while parsing body: %w", err) }
   if err := discardRParen(parsingContext); err != nil { return nil, fmt.Errorf("failed to parse let value, try consume last rparen: %w", err) }
 
-	return &LetNode{
-		LetEnv: map[string]ASTNode{envVariableName.Name: envVariableValue},
+	return &types.LetNode{
+		LetEnv: map[string]types.ASTNode{envVariableName.Name: envVariableValue},
 		Body: body,
 	}, nil
 }
 
 func discardLet(parsingContext *ParsingContext) error {
   token := parsingContext.consume()
-  if token.Type != LET {
+  if token.Type != types.LET {
     return fmt.Errorf("expected let but get:  %v", token)
   }
 
@@ -204,20 +205,20 @@ func discardLet(parsingContext *ParsingContext) error {
 
 func discardIN(parsingContext *ParsingContext) error {
   token := parsingContext.consume()
-  if token.Type != IN {
+  if token.Type != types.IN {
     return fmt.Errorf("expected in but get:  %v", token)
   }
 
   return nil
 }
 
-func parseLambda(parsingContext *ParsingContext) (ASTNode, error) {
+func parseLambda(parsingContext *ParsingContext) (types.ASTNode, error) {
 	if err := discardLParen(parsingContext); err != nil { return nil, fmt.Errorf("failed to parse lambda: %w", err) }
 	if err := discardLAMBDA(parsingContext); err != nil { return nil, fmt.Errorf("failed to parse lambda: %w", err) }
 	if err := discardLParen(parsingContext); err != nil { return nil, fmt.Errorf("failed to parse lambda: %w", err) }
 
-	args := make([]*SymbolNode, 0)
-	for parsingContext.currentToken().Type != RPAREN {
+	args := make([]*types.SymbolNode, 0)
+	for parsingContext.currentToken().Type != types.RPAREN {
 		envVariableName, err := parseSymbol(parsingContext)
 		if err != nil { return nil, fmt.Errorf("failed to parse lambda, while parsing env variable name: %w", err) }
 		args = append(args, envVariableName)
@@ -228,7 +229,7 @@ func parseLambda(parsingContext *ParsingContext) (ASTNode, error) {
 	if err != nil { return nil, fmt.Errorf("failed to parse lambda, while parsing body: %w", err) }
 	if err := discardRParen(parsingContext); err != nil { return nil, fmt.Errorf("failed to parse lambda, try consume last rparen: %w", err) }
 
-	return &LambdaNode{
+	return &types.LambdaNode{
 		Args: args,
 		Body: body,
 	}, nil
@@ -236,7 +237,7 @@ func parseLambda(parsingContext *ParsingContext) (ASTNode, error) {
 
 func discardLAMBDA(parsingContext *ParsingContext) error {
   token := parsingContext.consume()
-  if token.Type != LAMBDA {
+  if token.Type != types.LAMBDA {
     return fmt.Errorf("expected lambda but get:  %v", token)
   }
 

@@ -1,7 +1,12 @@
-package main
+package lexer
 
-func tokenize(input string) []Token {
-	tokens := []Token{}
+import (
+	"simlang/types"
+)
+
+
+func Toknize(input string) []types.Token {
+	tokens := []types.Token{}
 	var current string
 
 	for i := 0; i < len(input); i++ {
@@ -9,13 +14,13 @@ func tokenize(input string) []Token {
 
 		switch ch {
 		case '(':
-			tokens = append(tokens, Token{LPAREN, "("})
+			tokens = append(tokens, types.Token{Type: types.LPAREN, Value: "("})
 		case ')':
 			if current != "" {
 				tokens = append(tokens, createToken(current))
 				current = ""
 			}
-			tokens = append(tokens, Token{RPAREN, ")"})
+			tokens = append(tokens, types.Token{Type: types.RPAREN, Value:  ")"})
 		case ' ', '\n', '\t':
 			if current != "" {
 				tokens = append(tokens, createToken(current))
@@ -29,22 +34,22 @@ func tokenize(input string) []Token {
 	return tokens
 }
 
-func createToken(value string) Token {
+func createToken(value string) types.Token {
 	// 숫자인지 확인
 	if isNumber(value) {
-		return Token{NUMBER, value}
+		return types.Token{Type: types.NUMBER, Value: value}
 	}
 
 	switch value {
 	case "let":
-    return Token{LET, value}
+		return types.Token{Type: types.LET, Value: value}
 	case "in":
-    return Token{IN, value}
+		return types.Token{Type: types.IN, Value:  value}
 	case "lambda":
-    return Token{LAMBDA, value}
+		return types.Token{Type: types.LAMBDA, Value:  value}
 	}
 
-	return Token{ATOM, value}
+	return types.Token{Type: types.ATOM, Value:  value}
 }
 
 func isNumber(s string) bool {
