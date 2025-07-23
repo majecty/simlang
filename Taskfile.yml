@@ -21,3 +21,6 @@ tasks:
     cmds:
       - go run ./llvm/main
       - lli ./output.ll
+  fmt:
+    cmds:
+      - go fmt ...
