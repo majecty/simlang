@@ -13,6 +13,10 @@ tasks:
     cmds:
       - go run ./llvm/llvmSample1
       - lli ./output.ll
+  llvm2:
+    cmds:
+      - go run ./llvm/llvmSample2
+      - lli ./output.ll
   llvm:
     cmds:
       - go run ./llvm/main
