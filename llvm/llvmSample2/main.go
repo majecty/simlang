@@ -17,7 +17,7 @@ import (
 func main() {
 	fmt.Println("Hello, Go Project!")
 
-	ast, err := parser.Parse(lexer.Toknize("(+ 1 3)"))
+	ast, err := parser.Parse(lexer.Toknize("(+ 1 (+ 1 2))"))
 	if err != nil {
 		log.Fatalf("failed to parse %v", err)
 	} else {
@@ -69,8 +69,8 @@ define double @foo() {
 }
 
 define i32 @main() {
-	%4 = call i32 @foo()
-  %ret = call i32 (ptr, ...) @printf(ptr @pat, i32 %4)
+	%4 = call double @foo()
+  %ret = call i32 (ptr, ...) @printf(ptr @pat, double %4)
   ret i32 0
 }`
 
@@ -182,7 +182,29 @@ func (c *IRGenerationContext) nodeToLLVMIRValue(node types.ASTNode) (IRValue, er
 	case *types.SymbolNode:
 		return nil, fmt.Errorf("nodeToLLVMIRValue NumberNode not implemented yet")
 	case *types.CallNode:
-		return nil, fmt.Errorf("nodeToLLVMIRValue CallNode not implemented yet")
+		if _, ok := v.Function.(*types.SymbolNode); !ok {
+			return nil, fmt.Errorf("function is not symbol")
+		}
+		if v.Function.(*types.SymbolNode).Name != "+" {
+			return nil, fmt.Errorf("function name is not +")
+		}
+
+		if len(v.Args) != 2 {
+			return nil, fmt.Errorf("args count is not 2")
+		}
+
+		arg0, arg0Err := c.nodeToLLVMIRValue(v.Args[0])
+		if arg0Err != nil {
+			return nil, fmt.Errorf("failed to nodeToLLVMIRValue arg0: %w", arg0Err)
+		}
+
+		arg1, arg1Err := c.nodeToLLVMIRValue(v.Args[1])
+		if arg1Err != nil {
+			return nil, fmt.Errorf("failed to nodeToLLVMIRValue arg1: %w", arg1Err)
+		}
+
+		tempName := c.PutFAddInstruction(arg0, arg1)
+		return &RegisterName{Name: tempName}, nil
 	}
 
 	return nil, fmt.Errorf("not implemented yet")
