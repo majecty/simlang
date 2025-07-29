@@ -17,7 +17,7 @@ import (
 func main() {
 	fmt.Println("Hello, Go Project!")
 
-	ast, err := parser.Parse(lexer.Toknize("(+ 1 2)"))
+	ast, err := parser.Parse(lexer.Toknize("(+ 1 3)"))
 	if err != nil {
 		log.Fatalf("failed to parse %v", err)
 	} else {
@@ -57,9 +57,9 @@ func fillTemplate(functionBody string) (string, error) {
 source_filename = "simple_program.ll"
 declare i32 @printf(ptr, ...)
 
-@pat = global [14 x i8] c"answer is %d\0A\00"
+@pat = global [14 x i8] c"answer is %f\0A\00"
 
-define i32 @foo() {
+define double @foo() {
 	{{.functionBody}}
 ;	%1 = add i32 0, 1
 ;	%2 = add i32 0, 2
@@ -146,7 +146,7 @@ func (c *IRGenerationContext) nodeToLLVMIR(node types.ASTNode) (string, error) {
 			return "", fmt.Errorf("failed to nodeToLLVMIRValue arg1: %w", arg1Err)
 		}
 
-		tempName := c.PutAddInstruction(arg0, arg1)
+		tempName := c.PutFAddInstruction(arg0, arg1)
 		c.PutReturnInstruction(tempName)
 		return c.MakeFunctionBody(), nil
 	default:
@@ -159,11 +159,11 @@ type IRValue interface {
 }
 
 type NumberLiteral struct {
-	Value int32
+	Value float64
 }
 
 func (n *NumberLiteral) toIRValue() string {
-	return fmt.Sprintf("%d", n.Value)
+	return fmt.Sprintf("%f", n.Value)
 }
 
 type RegisterName struct {
@@ -178,7 +178,7 @@ func (c *IRGenerationContext) nodeToLLVMIRValue(node types.ASTNode) (IRValue, er
 	switch v := node.(type) {
 	case *types.NumberNode:
 		log.Printf("nodeToLLVMIRValue NumberNode %v\n", v)
-		return &NumberLiteral{Value: int32(v.Value)}, nil
+		return &NumberLiteral{Value: v.Value}, nil
 	case *types.SymbolNode:
 		return nil, fmt.Errorf("nodeToLLVMIRValue NumberNode not implemented yet")
 	case *types.CallNode:
@@ -188,10 +188,10 @@ func (c *IRGenerationContext) nodeToLLVMIRValue(node types.ASTNode) (IRValue, er
 	return nil, fmt.Errorf("not implemented yet")
 }
 
-/* PutAddInstruction returns new variable name */
-func (c *IRGenerationContext) PutAddInstruction(arg0 IRValue, arg1 IRValue) string {
+/* PutFAddInstruction returns new variable name */
+func (c *IRGenerationContext) PutFAddInstruction(arg0 IRValue, arg1 IRValue) string {
 	varName := c.AcquireNextTempVariableName()
-	c.instructions = append(c.instructions, fmt.Sprintf("%s = add i32 %s, %s", varName, arg0.toIRValue(), arg1.toIRValue()))
+	c.instructions = append(c.instructions, fmt.Sprintf("%s = fadd double %s, %s", varName, arg0.toIRValue(), arg1.toIRValue()))
 	return varName
 }
 
@@ -202,7 +202,7 @@ func (c *IRGenerationContext) AcquireNextTempVariableName() string {
 }
 
 func (c *IRGenerationContext) PutReturnInstruction(varName string) {
-	c.instructions = append(c.instructions, fmt.Sprintf("ret i32 %s", varName))
+	c.instructions = append(c.instructions, fmt.Sprintf("ret double %s", varName))
 }
 
 func (c *IRGenerationContext) MakeFunctionBody() string {
