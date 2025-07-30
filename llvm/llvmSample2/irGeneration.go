@@ -22,29 +22,11 @@ func (c *IRGenerationContext) nodeToLLVMIR(node types.ASTNode) (string, error) {
 	switch v := node.(type) {
 	case *types.CallNode:
 		fmt.Printf("root is call node %v\n", v)
-
-		if _, ok := v.Function.(*types.SymbolNode); !ok {
-			return "", fmt.Errorf("function is not symbol")
-		}
-		if v.Function.(*types.SymbolNode).Name != "+" {
-			return "", fmt.Errorf("function name is not +")
+		tempName, err := c.nodeToLLVMIRValue(v)
+		if err != nil {
+			return "", fmt.Errorf("failed to nodeToLLVMIRValue: %w", err)
 		}
 
-		if len(v.Args) != 2 {
-			return "", fmt.Errorf("args count is not 2")
-		}
-
-		arg0, arg0Err := c.nodeToLLVMIRValue(v.Args[0])
-		if arg0Err != nil {
-			return "", fmt.Errorf("failed to nodeToLLVMIRValue arg0: %w", arg0Err)
-		}
-
-		arg1, arg1Err := c.nodeToLLVMIRValue(v.Args[1])
-		if arg1Err != nil {
-			return "", fmt.Errorf("failed to nodeToLLVMIRValue arg1: %w", arg1Err)
-		}
-
-		tempName := c.PutFAddInstruction(arg0, arg1)
 		c.PutReturnInstruction(tempName)
 		return c.MakeFunctionBody(), nil
 	default:
@@ -101,8 +83,8 @@ func (c *IRGenerationContext) AcquireNextTempVariableName() string {
 	return name
 }
 
-func (c *IRGenerationContext) PutReturnInstruction(varName string) {
-	c.instructions = append(c.instructions, fmt.Sprintf("ret double %s", varName))
+func (c *IRGenerationContext) PutReturnInstruction(irValue IRValue) {
+	c.instructions = append(c.instructions, fmt.Sprintf("ret double %s", irValue.toIRValue()))
 }
 
 func (c *IRGenerationContext) MakeFunctionBody() string {
