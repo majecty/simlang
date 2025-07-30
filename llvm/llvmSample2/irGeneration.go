@@ -49,32 +49,31 @@ func (c *IRGenerationContext) nodeToLLVMIRValue(node types.ASTNode) (IRValue, er
 			return nil, fmt.Errorf("function name is not +")
 		}
 
-		if len(v.Args) != 2 {
-			return nil, fmt.Errorf("args count is not 2")
+		// TODO: 첫번째 arg는 변수 없이 사용도 가능함. 최적화 가능
+		sumName := c.PutFAddInstruction(
+			&NumberLiteral{Value: 0},
+			&NumberLiteral{Value: 0})
+
+		for _, arg := range v.Args {
+			argI, argErr := c.nodeToLLVMIRValue(arg)
+			if argErr != nil {
+				return nil, fmt.Errorf("failed to nodeToLLVMIRValue arg: %w", argErr)
+			}
+
+			sumName = c.PutFAddInstruction(&sumName, argI)
 		}
 
-		arg0, arg0Err := c.nodeToLLVMIRValue(v.Args[0])
-		if arg0Err != nil {
-			return nil, fmt.Errorf("failed to nodeToLLVMIRValue arg0: %w", arg0Err)
-		}
-
-		arg1, arg1Err := c.nodeToLLVMIRValue(v.Args[1])
-		if arg1Err != nil {
-			return nil, fmt.Errorf("failed to nodeToLLVMIRValue arg1: %w", arg1Err)
-		}
-
-		tempName := c.PutFAddInstruction(arg0, arg1)
-		return &RegisterName{Name: tempName}, nil
+		return &sumName, nil
 	}
 
 	return nil, fmt.Errorf("not implemented yet")
 }
 
 /* PutFAddInstruction returns new variable name */
-func (c *IRGenerationContext) PutFAddInstruction(arg0 IRValue, arg1 IRValue) string {
+func (c *IRGenerationContext) PutFAddInstruction(arg0 IRValue, arg1 IRValue) RegisterName {
 	varName := c.AcquireNextTempVariableName()
 	c.instructions = append(c.instructions, fmt.Sprintf("%s = fadd double %s, %s", varName, arg0.toIRValue(), arg1.toIRValue()))
-	return varName
+	return RegisterName{Name: varName}
 }
 
 func (c *IRGenerationContext) AcquireNextTempVariableName() string {
