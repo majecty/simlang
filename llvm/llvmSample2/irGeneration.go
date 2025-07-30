@@ -52,26 +52,6 @@ func (c *IRGenerationContext) nodeToLLVMIR(node types.ASTNode) (string, error) {
 	}
 }
 
-type IRValue interface {
-	toIRValue() string
-}
-
-type NumberLiteral struct {
-	Value float64
-}
-
-func (n *NumberLiteral) toIRValue() string {
-	return fmt.Sprintf("%f", n.Value)
-}
-
-type RegisterName struct {
-	Name string
-}
-
-func (r *RegisterName) toIRValue() string {
-	return r.Name
-}
-
 func (c *IRGenerationContext) nodeToLLVMIRValue(node types.ASTNode) (IRValue, error) {
 	switch v := node.(type) {
 	case *types.NumberNode:
