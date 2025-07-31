@@ -14,7 +14,7 @@ import (
 func main() {
 	fmt.Println("Hello, Go Project!")
 
-	ast, err := parser.Parse(lexer.Toknize("(+ 1 (+ 1 2) 3)"))
+	ast, err := parser.Parse(lexer.Toknize("(+ 1 (+ 1 2) 3 4)"))
 	if err != nil {
 		log.Fatalf("failed to parse %v", err)
 	} else {

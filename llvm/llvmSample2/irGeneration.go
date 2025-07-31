@@ -49,21 +49,30 @@ func (c *IRGenerationContext) nodeToLLVMIRValue(node types.ASTNode) (IRValue, er
 			return nil, fmt.Errorf("function name is not +")
 		}
 
-		// TODO: 첫번째 arg는 변수 없이 사용도 가능함. 최적화 가능
-		sumName := c.PutFAddInstruction(
-			&NumberLiteral{Value: 0},
-			&NumberLiteral{Value: 0})
+		if len(v.Args) == 0 {
+			return nil, fmt.Errorf("the number of arguments should be greater than zero")
+		}
 
-		for _, arg := range v.Args {
+		sumName, arg0Err := c.nodeToLLVMIRValue(v.Args[0])
+		if arg0Err != nil {
+			return nil, fmt.Errorf("failed to generate ir from arg0 %w", arg0Err)
+		}
+
+		for index, arg := range v.Args {
+			if index == 0 {
+				continue
+			}
+
 			argI, argErr := c.nodeToLLVMIRValue(arg)
 			if argErr != nil {
 				return nil, fmt.Errorf("failed to nodeToLLVMIRValue arg: %w", argErr)
 			}
 
-			sumName = c.PutFAddInstruction(&sumName, argI)
+			addResult := c.PutFAddInstruction(sumName, argI)
+			sumName = &addResult
 		}
 
-		return &sumName, nil
+		return sumName, nil
 	}
 
 	return nil, fmt.Errorf("not implemented yet")
