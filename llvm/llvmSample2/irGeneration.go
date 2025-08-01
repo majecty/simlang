@@ -83,6 +83,8 @@ func (c *IRGenerationContext) nodeToLLVMIRValue(node types.ASTNode) (IRValue, er
 		}
 
 		return sumName, nil
+	case *types.LetNode:
+		return nil, fmt.Errorf("letnode not implemented yet %v", node)
 	}
 
 	return nil, fmt.Errorf("not implemented yet %v", node)
