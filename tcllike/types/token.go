@@ -9,22 +9,25 @@ type Token struct {
 type TokenType int
 
 const (
-	ATOM TokenType = iota
-	NUMBER
-	LPAREN
-	RPAREN
+	Atom TokenType = iota
+	Number
+	LParen
+	RParen
+	LineEnd
 )
 
 func (t TokenType) String() string {
 	switch t {
-	case ATOM:
+	case Atom:
 		return "ATOM"
-	case NUMBER:
+	case Number:
 		return "NUMBER"
-	case LPAREN:
+	case LParen:
 		return "LPAREN"
-	case RPAREN:
+	case RParen:
 		return "RPAREN"
+	case LineEnd:
+		return "LineEnd"
 	default:
 		return "UNKNOWN"
 	}

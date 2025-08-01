@@ -16,14 +16,20 @@ func Tokenize(input string) []types.Token {
 				tokens = append(tokens, createToken(current))
 				current = ""
 			}
-			tokens = append(tokens, types.Token{Type: types.LPAREN, Value: "("})
+			tokens = append(tokens, types.Token{Type: types.LParen, Value: "("})
 		case ')':
 			if current != "" {
 				tokens = append(tokens, createToken(current))
 				current = ""
 			}
-			tokens = append(tokens, types.Token{Type: types.RPAREN, Value: ")"})
-		case ' ', '\n', '\t':
+			tokens = append(tokens, types.Token{Type: types.RParen, Value: ")"})
+		case '\n':
+			if current != "" {
+				tokens = append(tokens, createToken(current))
+				current = ""
+			}
+			tokens = append(tokens, types.Token{Type: types.LineEnd, Value: "\n"})
+		case ' ', '\t':
 			if current != "" {
 				tokens = append(tokens, createToken(current))
 				current = ""
@@ -42,9 +48,9 @@ func Tokenize(input string) []types.Token {
 
 func createToken(value string) types.Token {
 	if isNumber(value) {
-		return types.Token{Type: types.NUMBER, Value: value}
+		return types.Token{Type: types.Number, Value: value}
 	}
-	return types.Token{Type: types.ATOM, Value: value}
+	return types.Token{Type: types.Atom, Value: value}
 }
 
 func isNumber(s string) bool {
