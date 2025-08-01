@@ -24,3 +24,6 @@ tasks:
   fmt:
     cmds:
       - go fmt ...
+  tcllike:
+    cmds:
+      - go run ./mains/tcllike/
