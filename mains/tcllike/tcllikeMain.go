@@ -3,19 +3,24 @@ package main
 import (
 	"fmt"
 
+	"simlang/tcllike/evaluator"
 	"simlang/tcllike/lexer"
 	"simlang/tcllike/parser"
 )
 
 func main() {
 	fmt.Println("Hello, Go Project!")
+	lpe(`print 3`)
+	lpe(`print (exp 1 + 2)`)
+	lpe(`print (exp 1 + 2)
+    print 3`)
+}
 
-	fmt.Println(lexer.Tokenize("print 3"))
-	fmt.Println(lexer.Tokenize("print (exp 1 + 2)"))
-
-	fmt.Println(parser.Parse(lexer.Tokenize("print 3")))
-	fmt.Println(parser.Parse(lexer.Tokenize("print (exp 1 + 2)")))
-
-	fmt.Println(parser.Parse(lexer.Tokenize(`print (exp 1 + 2)
-		print 3`)))
+func lpe(code string) {
+	tokens := lexer.Tokenize(code)
+	ast, astErr := parser.Parse(tokens)
+	if astErr != nil {
+		panic(astErr)
+	}
+	evaluator.Eval(ast)
 }
