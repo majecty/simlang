@@ -8,9 +8,26 @@ import (
 	"simlang/types"
 )
 
+type IRRegisterLookup struct {
+	prev *IRRegisterLookup
+	dict map[string]IRValue
+}
+
 type IRGenerationContext struct {
 	nextVariableIndex uint32
 	instructions      []string
+	lookup            *IRRegisterLookup
+}
+
+func NewIRGenerationContext() *IRGenerationContext {
+	return &IRGenerationContext{
+		nextVariableIndex: 0,
+		instructions:      []string{},
+		lookup: &IRRegisterLookup{
+			prev: nil,
+			dict: map[string]IRValue{},
+		},
+	}
 }
 
 func (c *IRGenerationContext) astToLLVMIR(ast *types.AST) (string, error) {
@@ -49,17 +66,24 @@ func (c *IRGenerationContext) nodeToLLVMIRValue(node types.ASTNode) (IRValue, er
 		return &NumberLiteral{Value: v.Value}, nil
 
 	case *types.SymbolNode:
-		return nil, fmt.Errorf("nodeToLLVMIRValue SymbolNode not implemented yet")
+		irValue := c.lookup.dict[v.Name]
+		if irValue != nil {
+			return irValue, nil
+		}
+		return nil, fmt.Errorf("symbol %s not found", v.Name)
 
 	case *types.CallNode:
 		return c.callNodeToLLVMIRValue(v)
 
 	case *types.LetNode:
-		for _, arg := range v.LetEnv {
-			// fixme: add variable lookup
-			_, err := c.nodeToLLVMIRValue(arg)
+		// todo: push context
+		for argName, arg := range v.LetEnv {
+			irValue, err := c.nodeToLLVMIRValue(arg)
 			if err != nil {
 				return nil, fmt.Errorf("failed to nodeToLLVMIRValue arg: %w", err)
+			}
+			if err := c.PutLookup(argName, irValue); err != nil {
+				return nil, fmt.Errorf("failed to PutLookup: %w", err)
 			}
 		}
 
@@ -126,4 +150,17 @@ func (c *IRGenerationContext) callNodeToLLVMIRValue(callNode *types.CallNode) (I
 	}
 
 	return sumName, nil
+}
+
+func (c *IRGenerationContext) PutLookup(name string, irValue IRValue) error {
+	if c.lookup == nil {
+		return fmt.Errorf("lookup is nil, while putting %s (%v) to lookup", name, irValue)
+	}
+
+	if _, ok := c.lookup.dict[name]; ok {
+		return fmt.Errorf("lookup already has %s", name)
+	}
+
+	c.lookup.dict[name] = irValue
+	return nil
 }
