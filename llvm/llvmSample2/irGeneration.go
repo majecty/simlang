@@ -52,37 +52,8 @@ func (c *IRGenerationContext) nodeToLLVMIRValue(node types.ASTNode) (IRValue, er
 		return nil, fmt.Errorf("nodeToLLVMIRValue SymbolNode not implemented yet")
 
 	case *types.CallNode:
-		if _, ok := v.Function.(*types.SymbolNode); !ok {
-			return nil, fmt.Errorf("function is not symbol")
-		}
-		if v.Function.(*types.SymbolNode).Name != "+" {
-			return nil, fmt.Errorf("function name is not +")
-		}
+		return c.callNodeToLLVMIRValue(v)
 
-		if len(v.Args) == 0 {
-			return nil, fmt.Errorf("the number of arguments should be greater than zero")
-		}
-
-		sumName, arg0Err := c.nodeToLLVMIRValue(v.Args[0])
-		if arg0Err != nil {
-			return nil, fmt.Errorf("failed to generate ir from arg0 %w", arg0Err)
-		}
-
-		for index, arg := range v.Args {
-			if index == 0 {
-				continue
-			}
-
-			argI, argErr := c.nodeToLLVMIRValue(arg)
-			if argErr != nil {
-				return nil, fmt.Errorf("failed to nodeToLLVMIRValue arg: %w", argErr)
-			}
-
-			addResult := c.PutFAddInstruction(sumName, argI)
-			sumName = &addResult
-		}
-
-		return sumName, nil
 	case *types.LetNode:
 		return nil, fmt.Errorf("letnode not implemented yet %v", node)
 	}
@@ -113,4 +84,38 @@ func (c *IRGenerationContext) MakeFunctionBody() string {
 		stringbuilder.WriteString(fmt.Sprintf("%s\n", instruction))
 	}
 	return stringbuilder.String()
+}
+
+func (c *IRGenerationContext) callNodeToLLVMIRValue(callNode *types.CallNode) (IRValue, error) {
+	if _, ok := callNode.Function.(*types.SymbolNode); !ok {
+		return nil, fmt.Errorf("function is not symbol")
+	}
+	if callNode.Function.(*types.SymbolNode).Name != "+" {
+		return nil, fmt.Errorf("function name is not +")
+	}
+
+	if len(callNode.Args) == 0 {
+		return nil, fmt.Errorf("the number of arguments should be greater than zero")
+	}
+
+	sumName, arg0Err := c.nodeToLLVMIRValue(callNode.Args[0])
+	if arg0Err != nil {
+		return nil, fmt.Errorf("failed to generate ir from arg0 %w", arg0Err)
+	}
+
+	for index, arg := range callNode.Args {
+		if index == 0 {
+			continue
+		}
+
+		argI, argErr := c.nodeToLLVMIRValue(arg)
+		if argErr != nil {
+			return nil, fmt.Errorf("failed to nodeToLLVMIRValue arg: %w", argErr)
+		}
+
+		addResult := c.PutFAddInstruction(sumName, argI)
+		sumName = &addResult
+	}
+
+	return sumName, nil
 }
