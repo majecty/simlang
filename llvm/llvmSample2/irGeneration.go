@@ -30,8 +30,13 @@ func (c *IRGenerationContext) nodeToLLVMIR(node types.ASTNode) (string, error) {
 		c.PutReturnInstruction(tempName)
 		return c.MakeFunctionBody(), nil
 	case *types.LetNode:
-		// Let 노드 처리 - 바디만 평가 (간단한 버전)
-		return c.nodeToLLVMIR(v.Body)
+		tempName, err := c.nodeToLLVMIRValue(v)
+		if err != nil {
+			return "", fmt.Errorf("failed to nodeToLLVMIRValue: %w", err)
+		}
+
+		c.PutReturnInstruction(tempName)
+		return c.MakeFunctionBody(), nil
 	default:
 		return "", fmt.Errorf("not implemented yet for type %T", node)
 	}
@@ -42,8 +47,10 @@ func (c *IRGenerationContext) nodeToLLVMIRValue(node types.ASTNode) (IRValue, er
 	case *types.NumberNode:
 		log.Printf("nodeToLLVMIRValue NumberNode %v\n", v)
 		return &NumberLiteral{Value: v.Value}, nil
+
 	case *types.SymbolNode:
-		return nil, fmt.Errorf("nodeToLLVMIRValue NumberNode not implemented yet")
+		return nil, fmt.Errorf("nodeToLLVMIRValue SymbolNode not implemented yet")
+
 	case *types.CallNode:
 		if _, ok := v.Function.(*types.SymbolNode); !ok {
 			return nil, fmt.Errorf("function is not symbol")
@@ -78,7 +85,7 @@ func (c *IRGenerationContext) nodeToLLVMIRValue(node types.ASTNode) (IRValue, er
 		return sumName, nil
 	}
 
-	return nil, fmt.Errorf("not implemented yet")
+	return nil, fmt.Errorf("not implemented yet %v", node)
 }
 
 /* PutFAddInstruction returns new variable name */
