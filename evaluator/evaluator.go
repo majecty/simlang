@@ -1,7 +1,10 @@
 package evaluator
 
-import "fmt"
-import "simlang/types"
+import (
+	"fmt"
+
+	"simlang/types"
+)
 
 type Env struct {
 	EnvMap map[string]any
@@ -19,7 +22,7 @@ func (e *Env) Get(name string) any {
 }
 
 func Eval(ast *types.AST) (any, error) {
-	var defaultEnv = &Env{EnvMap: make(map[string]any)}
+	defaultEnv := &Env{EnvMap: make(map[string]any)}
 	defaultEnv.EnvMap["+"] = func(args []any) (any, error) {
 		resultSum := 0.0
 		for _, arg := range args {
