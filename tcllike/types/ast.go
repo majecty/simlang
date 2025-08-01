@@ -37,10 +37,9 @@ func (n *NumberNode) astNode() {}
 func (n *CallNode) astNode()   {}
 
 func (n *LinesNode) String() string {
-	// TODO: pring line number ai!
 	lines := make([]string, len(n.Lines))
 	for i, line := range n.Lines {
-		lines[i] = line.String()
+		lines[i] = fmt.Sprintf("Line %d: %s", i+1, line.String())
 	}
 	return strings.Join(lines, "\n")
 }
