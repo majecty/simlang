@@ -55,7 +55,15 @@ func (c *IRGenerationContext) nodeToLLVMIRValue(node types.ASTNode) (IRValue, er
 		return c.callNodeToLLVMIRValue(v)
 
 	case *types.LetNode:
-		return nil, fmt.Errorf("letnode not implemented yet %v", node)
+		for _, arg := range v.LetEnv {
+			// fixme: add variable lookup
+			_, err := c.nodeToLLVMIRValue(arg)
+			if err != nil {
+				return nil, fmt.Errorf("failed to nodeToLLVMIRValue arg: %w", err)
+			}
+		}
+
+		return c.nodeToLLVMIRValue(v.Body)
 	}
 
 	return nil, fmt.Errorf("not implemented yet %v", node)
