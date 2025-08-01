@@ -11,6 +11,18 @@ func Tokenize(input string) []types.Token {
 		ch := input[i]
 
 		switch ch {
+		case '(':
+			if current != "" {
+				tokens = append(tokens, createToken(current))
+				current = ""
+			}
+			tokens = append(tokens, types.Token{Type: types.LPAREN, Value: "("})
+		case ')':
+			if current != "" {
+				tokens = append(tokens, createToken(current))
+				current = ""
+			}
+			tokens = append(tokens, types.Token{Type: types.RPAREN, Value: ")"})
 		case ' ', '\n', '\t':
 			if current != "" {
 				tokens = append(tokens, createToken(current))

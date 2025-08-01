@@ -11,6 +11,8 @@ type TokenType int
 const (
 	ATOM TokenType = iota
 	NUMBER
+	LPAREN
+	RPAREN
 )
 
 func (t TokenType) String() string {
@@ -19,6 +21,10 @@ func (t TokenType) String() string {
 		return "ATOM"
 	case NUMBER:
 		return "NUMBER"
+	case LPAREN:
+		return "LPAREN"
+	case RPAREN:
+		return "RPAREN"
 	default:
 		return "UNKNOWN"
 	}
