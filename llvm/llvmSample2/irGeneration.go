@@ -29,7 +29,7 @@ func (c *IRGenerationContext) nodeToLLVMIR(node types.ASTNode) (string, error) {
 
 		c.PutReturnInstruction(tempName)
 		return c.MakeFunctionBody(), nil
-	// todo: make simple let case  ai!
+	// todo: make simple let case ai!
 	default:
 		return "", fmt.Errorf("not implemented yet")
 	}
