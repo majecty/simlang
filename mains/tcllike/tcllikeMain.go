@@ -1,7 +1,13 @@
 package main
 
-import "fmt"
+import (
+	"fmt"
+
+	"simlang/tcllike/lexer"
+)
 
 func main() {
 	fmt.Println("Hello, Go Project!")
+
+	fmt.Println(lexer.Tokenize("print 3"))
 }
