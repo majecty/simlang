@@ -15,4 +15,7 @@ func main() {
 
 	fmt.Println(parser.Parse(lexer.Tokenize("print 3")))
 	fmt.Println(parser.Parse(lexer.Tokenize("print (exp 1 + 2)")))
+
+	fmt.Println(parser.Parse(lexer.Tokenize(`print (exp 1 + 2)
+		print 3`)))
 }

@@ -59,14 +59,17 @@ func Parse(tokens []types.Token) (*types.AST, error) {
 
 func parseLines(parsingContext *ParsingContext) (types.ASTNode, error) {
 	lines := make([]types.ASTNode, 0)
-	node, err := parseCall(parsingContext)
-	if err != nil {
-		return nil, fmt.Errorf("failed to parse line: %w", err)
+
+	for parsingContext.hasNextToken() {
+		node, err := parseCall(parsingContext)
+		if err != nil {
+			return nil, fmt.Errorf("failed to parse line: %w", err)
+		}
+		if err := consumeLineEnd(parsingContext); err != nil {
+			return nil, fmt.Errorf("failed to parse line: %w", err)
+		} // consumeLineEnd(parsingContext)
+		lines = append(lines, node)
 	}
-	if err := consumeLineEnd(parsingContext); err != nil {
-		return nil, fmt.Errorf("failed to parse line: %w", err)
-	} // consumeLineEnd(parsingContext)
-	lines = append(lines, node)
 
 	return &types.LinesNode{Lines: lines}, nil
 }
