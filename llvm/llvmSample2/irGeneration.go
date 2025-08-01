@@ -76,7 +76,8 @@ func (c *IRGenerationContext) nodeToLLVMIRValue(node types.ASTNode) (IRValue, er
 		return c.callNodeToLLVMIRValue(v)
 
 	case *types.LetNode:
-		// todo: push context
+		c.pushLookup()
+		defer c.popLookup()
 		for argName, arg := range v.LetEnv {
 			irValue, err := c.nodeToLLVMIRValue(arg)
 			if err != nil {
@@ -163,4 +164,15 @@ func (c *IRGenerationContext) PutLookup(name string, irValue IRValue) error {
 
 	c.lookup.dict[name] = irValue
 	return nil
+}
+
+func (c *IRGenerationContext) pushLookup() {
+	c.lookup = &IRRegisterLookup{
+		prev: c.lookup,
+		dict: map[string]IRValue{},
+	}
+}
+
+func (c *IRGenerationContext) popLookup() {
+	c.lookup = c.lookup.prev
 }

@@ -14,7 +14,7 @@ import (
 func main() {
 	fmt.Println("Hello, Go Project!")
 
-	ast, err := parser.Parse(lexer.Toknize("(let (x 10) in 3)"))
+	ast, err := parser.Parse(lexer.Toknize("(let (x 10) in (+ x (let (x 5) in x)))"))
 
 	if err != nil {
 		log.Fatalf("failed to parse %v", err)
@@ -22,7 +22,7 @@ func main() {
 		fmt.Printf("parse result %v\n", ast)
 	}
 	var body string
-	iRGenerationContext := IRGenerationContext{}
+	iRGenerationContext := NewIRGenerationContext()
 	body, err = iRGenerationContext.astToLLVMIR(ast)
 	if err != nil {
 		log.Fatalf("failed to astToLLVMIR %v", err)
