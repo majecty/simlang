@@ -1,4 +1,6 @@
-// add package documentation here ai!
+// Package parser implements the parsing logic for the Simlang programming language.
+// It transforms tokens from the lexer into an abstract syntax tree (AST) representation.
+// The parser handles language constructs like function calls, let expressions, and lambdas.
 package parser
 
 import (
