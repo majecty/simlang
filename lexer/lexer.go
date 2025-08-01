@@ -1,5 +1,7 @@
 package lexer
 
+// add package comment for lexer package ai!
+
 import (
 	"simlang/types"
 )
