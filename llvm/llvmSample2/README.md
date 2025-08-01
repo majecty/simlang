@@ -25,3 +25,7 @@ go run .
 
 입력: `(let (x 10) in x)`
 출력: x 변수에 10을 바인딩하고 그 값을 반환하는 LLVM IR 코드
+
+## TODO
+
+# write todo here AI!
