@@ -29,9 +29,11 @@ func (c *IRGenerationContext) nodeToLLVMIR(node types.ASTNode) (string, error) {
 
 		c.PutReturnInstruction(tempName)
 		return c.MakeFunctionBody(), nil
-	// todo: make simple let case ai!
+	case *types.LetNode:
+		// Let 노드 처리 - 바디만 평가 (간단한 버전)
+		return c.nodeToLLVMIR(v.Body)
 	default:
-		return "", fmt.Errorf("not implemented yet")
+		return "", fmt.Errorf("not implemented yet for type %T", node)
 	}
 }
 
