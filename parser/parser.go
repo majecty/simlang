@@ -1,11 +1,13 @@
+// add package documentation here ai!
 package parser
 
 import (
 	"errors"
 	"fmt"
+	"strconv"
+
 	"simlang/types"
 	"simlang/util"
-	"strconv"
 )
 
 type ParsingContext struct {
