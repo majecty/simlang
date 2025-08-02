@@ -11,7 +11,7 @@ import (
 func main() {
 	fmt.Println("Hello, Go Project!")
 	lpe(`print 3`)
-	lpe(`print (exp 1 + 2)`)
+	lpe(`print (exp 1 + (exp 2 + 3))`)
 	lpe(`print (exp 1 + 2)
     print 3`)
 }
@@ -22,5 +22,6 @@ func lpe(code string) {
 	if astErr != nil {
 		panic(astErr)
 	}
+	fmt.Printf("%v => \n", code)
 	evaluator.Eval(ast)
 }
