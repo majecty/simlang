@@ -183,17 +183,6 @@ loop:
 	return &types.CallNode{FuncName: operatorSymbol.Name, Args: []types.ASTNode{leftArg, rightArg}}, nil
 }
 
-func consumeRParen(parsingContext *ParsingContext) error {
-	token, err := parsingContext.consume()
-	if err != nil {
-		return fmt.Errorf("failed to parse rparen: %w", err)
-	}
-	if token.Type != types.RParen {
-		return fmt.Errorf("expected rparen, got %v", token)
-	}
-	return nil
-}
-
 func consumeRBracket(parsingContext *ParsingContext) error {
 	token, err := parsingContext.consume()
 	if err != nil {
