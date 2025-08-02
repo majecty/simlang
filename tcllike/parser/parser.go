@@ -48,7 +48,7 @@ func Parse(tokens []types.Token) (*types.AST, error) {
 	parsingContext := ParsingContext{tokens: tokens, currentTokenIndex: 0}
 	node, err := parseLines(&parsingContext)
 	if err != nil {
-		return nil, fmt.Errorf("failed to parse lines: %w", err)
+		return nil, fmt.Errorf("failed to parse lines: %w\n input was %v", err, tokens)
 	}
 	if parsingContext.hasNextToken() {
 		return nil, fmt.Errorf("node is parsed but tokens remains, node: %v", node)
