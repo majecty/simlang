@@ -23,6 +23,18 @@ func Tokenize(input string) []types.Token {
 				current = ""
 			}
 			tokens = append(tokens, types.Token{Type: types.RParen, Value: ")"})
+		case '[':
+			if current != "" {
+				tokens = append(tokens, createToken(current))
+				current = ""
+			}
+			tokens = append(tokens, types.Token{Type: types.LBracket, Value: "["})
+		case ']':
+			if current != "" {
+				tokens = append(tokens, createToken(current))
+				current = ""
+			}
+			tokens = append(tokens, types.Token{Type: types.RBracket, Value: "]"})
 		case '\n':
 			if current != "" {
 				tokens = append(tokens, createToken(current))

@@ -12,6 +12,7 @@ func main() {
 	fmt.Println("Hello, Go Project!")
 	lpe(`print 3`)
 	lpe(`print (1 + (2 + 3))`)
+	lpe(`print [+ 1 2]`)
 	lpe(`print (1 + 2)
     print 3`)
 }

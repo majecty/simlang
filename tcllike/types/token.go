@@ -14,6 +14,8 @@ const (
 	LParen
 	RParen
 	LineEnd
+	LBracket
+	RBracket
 )
 
 func (t TokenType) String() string {
@@ -28,6 +30,10 @@ func (t TokenType) String() string {
 		return "RPAREN"
 	case LineEnd:
 		return "LineEnd"
+	case LBracket:
+		return "LBracket"
+	case RBracket:
+		return "RBracket"
 	default:
 		return "UNKNOWN"
 	}

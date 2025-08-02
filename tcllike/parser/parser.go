@@ -95,6 +95,13 @@ loop:
 			args = append(args, &types.SymbolNode{Name: nextToken.Value})
 		case types.Number:
 			args = append(args, &types.NumberNode{Value: parseFloat64(nextToken.Value)})
+		case types.LBracket:
+			arg, err := parseCall(parsingContext)
+			if err != nil {
+				return nil, fmt.Errorf("failed to parse call(arg %d): %w", argIndex, err)
+			}
+			args = append(args, arg)
+			consumeRBracket(parsingContext)
 		case types.LParen:
 			parsingContext.back()
 			argNode, err := parseParen(parsingContext)
@@ -183,6 +190,17 @@ func consumeRParen(parsingContext *ParsingContext) error {
 	}
 	if token.Type != types.RParen {
 		return fmt.Errorf("expected rparen, got %v", token)
+	}
+	return nil
+}
+
+func consumeRBracket(parsingContext *ParsingContext) error {
+	token, err := parsingContext.consume()
+	if err != nil {
+		return fmt.Errorf("failed to parse rbracket: %w", err)
+	}
+	if token.Type != types.RBracket {
+		return fmt.Errorf("expected rbracket, got %v", token)
 	}
 	return nil
 }
