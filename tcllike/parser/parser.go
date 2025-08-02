@@ -57,7 +57,7 @@ func Parse(tokens []types.Token) (*types.AST, error) {
 	return &types.AST{Root: node}, nil
 }
 
-func parseLines(parsingContext *ParsingContext) (types.ASTNode, error) {
+func parseLines(parsingContext *ParsingContext) (*types.LinesNode, error) {
 	lines := make([]types.ASTNode, 0)
 
 	for parsingContext.hasNextToken() {

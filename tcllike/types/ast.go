@@ -11,7 +11,7 @@ type ASTNode interface {
 }
 
 type AST struct {
-	Root ASTNode
+	Root *LinesNode
 }
 
 type LinesNode struct {
