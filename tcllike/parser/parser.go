@@ -96,14 +96,12 @@ loop:
 		case types.Number:
 			args = append(args, &types.NumberNode{Value: parseFloat64(nextToken.Value)})
 		case types.LParen:
-			arg, err := parseCall(parsingContext)
+			parsingContext.back()
+			argNode, err := parseParen(parsingContext)
 			if err != nil {
-				return nil, fmt.Errorf("failed to parse call(lparen): %w", err)
+				return nil, fmt.Errorf("failed to parse call(arg %d): %w", argIndex, err)
 			}
-			args = append(args, arg)
-			if err := consumeRParen(parsingContext); err != nil {
-				return nil, fmt.Errorf("failed to parse call(rparen): %w", err)
-			}
+			args = append(args, argNode)
 		default:
 			parsingContext.back()
 			break loop
@@ -122,6 +120,60 @@ func parseFloat64(value string) float64 {
 		panic(err)
 	}
 	return f
+}
+
+func parseParen(parsingContext *ParsingContext) (types.ASTNode, error) {
+	token, err := parsingContext.consume()
+	if err != nil {
+		return nil, fmt.Errorf("failed to parse lparen: %w", err)
+	}
+	if token.Type != types.LParen {
+		return nil, fmt.Errorf("expected lparen, got %v", token)
+	}
+
+	elements := make([]types.ASTNode, 0)
+loop:
+	for parsingContext.hasNextToken() {
+		token, err := parsingContext.consume()
+		if err != nil {
+			return nil, fmt.Errorf("failed to parse lparen: %w", err)
+		}
+
+		switch token.Type {
+		case types.RParen:
+			break loop
+		case types.LParen:
+			parsingContext.back()
+			inner, err := parseParen(parsingContext)
+			if err != nil {
+				return nil, fmt.Errorf("failed to parse lparen: %w", err)
+			}
+			elements = append(elements, inner)
+		case types.Atom:
+			elements = append(elements, &types.SymbolNode{Name: token.Value})
+		case types.Number:
+			elements = append(elements, &types.NumberNode{Value: parseFloat64(token.Value)})
+		}
+	}
+
+	if len(elements) == 0 {
+		return nil, errors.New("empty elements")
+	}
+
+	if len(elements) != 3 {
+		return nil, fmt.Errorf("expected 3 elements in paren, got %d", len(elements))
+	}
+
+	leftArg := elements[0]
+	operator := elements[1]
+	rightArg := elements[2]
+
+	operatorSymbol, ok := operator.(*types.SymbolNode)
+	if !ok {
+		return nil, fmt.Errorf("expected operator to be symbol node, got %T", operator)
+	}
+
+	return &types.CallNode{FuncName: operatorSymbol.Name, Args: []types.ASTNode{leftArg, rightArg}}, nil
 }
 
 func consumeRParen(parsingContext *ParsingContext) error {
