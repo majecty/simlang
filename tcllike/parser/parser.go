@@ -8,7 +8,6 @@ import (
 	"strconv"
 
 	"simlang/tcllike/types"
-	"simlang/util"
 )
 
 type ParsingContext struct {
@@ -80,9 +79,10 @@ func parseLines(parsingContext *ParsingContext) (*types.LinesNode, error) {
 				lines = append(lines, &types.SymbolNode{Name: token.Value})
 			} else {
 				parsingContext.back()
+				parsingContext.back()
 				node, err := parseCall(parsingContext)
 				if err != nil {
-					return nil, fmt.Errorf("failed to parsecall ", err)
+					return nil, fmt.Errorf("failed to parse call: %w", err)
 				}
 				lines = append(lines, node)
 			}
@@ -103,7 +103,9 @@ func parseCall(parsingContext *ParsingContext) (types.ASTNode, error) {
 	if err != nil {
 		return nil, fmt.Errorf("failed to parse call(first function name): %w", err)
 	}
-	util.Invariant(funcToken.Type == types.Atom, "invalid atom, there should be function call atom %v", parsingContext.tokens)
+	if funcToken.Type != types.Atom {
+		return nil, fmt.Errorf("failed to parse call invalid atom, there should be function call atom %v, ", funcToken.Type)
+	}
 	args := make([]types.ASTNode, 0)
 
 	argIndex := 0
@@ -114,32 +116,57 @@ loop:
 			return nil, fmt.Errorf("failed to parse call(arg %d): %w", argIndex, err)
 		}
 		argIndex++
-		switch nextToken.Type {
-		case types.Atom:
-			args = append(args, &types.SymbolNode{Name: nextToken.Value})
-		case types.Number:
-			args = append(args, &types.NumberNode{Value: parseFloat64(nextToken.Value)})
-		case types.LBracket:
-			arg, err := parseCall(parsingContext)
-			if err != nil {
-				return nil, fmt.Errorf("failed to parse call(arg %d): %w", argIndex, err)
-			}
-			args = append(args, arg)
-			consumeRBracket(parsingContext)
-		case types.LParen:
-			parsingContext.back()
-			argNode, err := parseParen(parsingContext)
-			if err != nil {
-				return nil, fmt.Errorf("failed to parse call(arg %d): %w", argIndex, err)
-			}
-			args = append(args, argNode)
-		default:
+		if nextToken.Type == types.LineEnd {
 			parsingContext.back()
 			break loop
 		}
+		parsingContext.back()
+		arg, argErr := maybeParseValue(parsingContext)
+		if argErr != nil {
+			return nil, fmt.Errorf("failed to parse call arg %d: %w", argIndex, argErr)
+		}
+		if arg == nil {
+			break loop
+		}
+		args = append(args, arg)
 	}
 
 	return &types.CallNode{FuncName: funcToken.Value, Args: args}, nil
+}
+
+func maybeParseValue(parsingContext *ParsingContext) (types.ASTNode, error) {
+	if parsingContext.hasNextToken() == false {
+		return nil, fmt.Errorf("try to parse value but found EOF")
+	}
+
+	token, err := parsingContext.consume()
+	if err != nil {
+		return nil, fmt.Errorf("try to parse value but failed to consume token: %w", err)
+	}
+
+	switch token.Type {
+	case types.Atom:
+		return &types.SymbolNode{Name: token.Value}, nil
+	case types.Number:
+		return &types.NumberNode{Value: parseFloat64(token.Value)}, nil
+	case types.LBracket:
+		parsedCall, err := parseCall(parsingContext)
+		if err != nil {
+			return nil, fmt.Errorf("failed to parse value: %w", err)
+		}
+		consumeRBracket(parsingContext)
+		return parsedCall, nil
+	case types.LParen:
+		parsingContext.back()
+		parsedParen, err := parseParen(parsingContext)
+		if err != nil {
+			return nil, fmt.Errorf("failed to parse value: %w", err)
+		}
+		return parsedParen, nil
+	default:
+		parsingContext.back()
+		return nil, nil
+	}
 }
 
 func parseFloat64(value string) float64 {

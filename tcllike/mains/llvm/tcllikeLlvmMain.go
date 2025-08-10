@@ -10,7 +10,7 @@ import (
 func main() {
 	println("Hello, World!")
 
-	ast, err := parser.Parse(lexer.Tokenize("3\n4"))
+	ast, err := parser.Parse(lexer.Tokenize("(3 + 4)"))
 	if err != nil {
 		panic(err)
 	}
