@@ -61,14 +61,38 @@ func parseLines(parsingContext *ParsingContext) (*types.LinesNode, error) {
 	lines := make([]types.ASTNode, 0)
 
 	for parsingContext.hasNextToken() {
-		node, err := parseCall(parsingContext)
+		token, err := parsingContext.consume()
 		if err != nil {
-			return nil, fmt.Errorf("failed to parse line: %w", err)
+			return nil, fmt.Errorf("failed to consume", err)
 		}
+
+		switch token.Type {
+		case types.Number:
+			num := parseFloat64(token.Value)
+			lines = append(lines, &types.NumberNode{Value: num})
+		case types.Atom:
+			nextToken, nextTokenErr := parsingContext.consume()
+			if nextTokenErr != nil {
+				return nil, fmt.Errorf("failed to consume next of atom", nextTokenErr)
+			}
+			if nextToken.Type == types.LineEnd {
+				parsingContext.back()
+				lines = append(lines, &types.SymbolNode{Name: token.Value})
+			} else {
+				parsingContext.back()
+				node, err := parseCall(parsingContext)
+				if err != nil {
+					return nil, fmt.Errorf("failed to parsecall ", err)
+				}
+				lines = append(lines, node)
+			}
+		default:
+			return nil, fmt.Errorf("unexpected token: %v", token)
+		}
+
 		if err := consumeLineEnd(parsingContext); err != nil {
 			return nil, fmt.Errorf("failed to parse line: %w", err)
 		} // consumeLineEnd(parsingContext)
-		lines = append(lines, node)
 	}
 
 	return &types.LinesNode{Lines: lines}, nil
