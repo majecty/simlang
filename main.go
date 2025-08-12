@@ -2,7 +2,9 @@ package main
 
 import (
 	"bufio"
+	"flag"
 	"fmt"
+	"net/http"
 	"os"
 	"simlang/evaluator"
 	"simlang/lexer"
@@ -11,6 +13,21 @@ import (
 )
 
 func main() {
+	mode := flag.String("mode", "terminal", "Interface mode (terminal/web)")
+	flag.Parse()
+
+	switch *mode {
+	case "terminal":
+		runTerminalUI()
+	case "web":
+		runWebUI()
+	default:
+		fmt.Println("Invalid mode. Use 'terminal' or 'web'")
+		os.Exit(1)
+	}
+}
+
+func runTerminalUI() {
 	ui.PrintWelcome()
 
 	scanner := bufio.NewScanner(os.Stdin)
@@ -39,6 +56,13 @@ func main() {
 
 		ui.PrintResult(fmt.Sprintf("%v", result))
 	}
+}
+
+func runWebUI() {
+	fmt.Println("Starting web server on http://localhost:8080")
+	http.Handle("/", ui.NewWebUI())
+	http.ListenAndServe(":8080", nil)
+}
 	fmt.Println("Hello, Go Project!")
 
 	fmt.Println(parser.Parse(lexer.Toknize("(hello world)")))
