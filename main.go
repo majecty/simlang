@@ -1,11 +1,44 @@
 package main
 
-import "fmt"
-import "simlang/evaluator"
-import "simlang/parser"
-import "simlang/lexer"
+import (
+	"bufio"
+	"fmt"
+	"os"
+	"simlang/evaluator"
+	"simlang/lexer"
+	"simlang/parser"
+	"simlang/ui"
+)
 
 func main() {
+	ui.PrintWelcome()
+
+	scanner := bufio.NewScanner(os.Stdin)
+	for {
+		ui.PrintPrompt()
+		if !scanner.Scan() {
+			break
+		}
+
+		input := scanner.Text()
+		if input == "exit" {
+			break
+		}
+
+		ast, err := parser.Parse(lexer.Toknize(input))
+		if err != nil {
+			ui.PrintError(err.Error())
+			continue
+		}
+
+		result, err := evaluator.Eval(ast)
+		if err != nil {
+			ui.PrintError(err.Error())
+			continue
+		}
+
+		ui.PrintResult(fmt.Sprintf("%v", result))
+	}
 	fmt.Println("Hello, Go Project!")
 
 	fmt.Println(parser.Parse(lexer.Toknize("(hello world)")))
