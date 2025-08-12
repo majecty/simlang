@@ -7,13 +7,16 @@ import (
 	"simlang/tcllike/types"
 )
 
-func Eval(ast *types.AST) error {
+func Eval(ast *types.AST) (any, error) {
 	lines := ast.Root
 
-	if _, err := evalLines(lines); err != nil {
-		return fmt.Errorf("failed to eval lines: %w", err)
+	var result any = nil
+	if lineResult, err := evalLines(lines); err != nil {
+		return nil, fmt.Errorf("failed to eval lines: %w", err)
+	} else {
+		result = lineResult
 	}
-	return nil
+	return result, nil
 }
 
 func evalLines(lines *types.LinesNode) (any, error) {

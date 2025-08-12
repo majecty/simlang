@@ -5,9 +5,10 @@ import (
 	"fmt"
 	"html/template"
 	"net/http"
-	"tcllike/evaluator"
-	"tcllike/lexer"
-	"tcllike/parser"
+
+	"simlang/tcllike/evaluator"
+	"simlang/tcllike/lexer"
+	"simlang/tcllike/parser"
 )
 
 type WebUI struct {

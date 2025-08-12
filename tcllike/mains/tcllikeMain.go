@@ -6,10 +6,11 @@ import (
 	"fmt"
 	"net/http"
 	"os"
-	"tcllike/evaluator"
-	"tcllike/lexer"
-	"tcllike/parser"
-	"tcllike/ui"
+
+	"simlang/tcllike/evaluator"
+	"simlang/tcllike/lexer"
+	"simlang/tcllike/parser"
+	"simlang/tcllike/ui"
 )
 
 func main() {
