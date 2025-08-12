@@ -67,7 +67,10 @@ func NewWebUI() *WebUI {
 					output.textContent = '✗ ' + result.error;
 				} else {
 					output.className = 'result';
-					output.textContent = '=> ' + result.output;
+					let outputText = '=> ' + result.output;
+					outputText += '\n\nTokens:\n' + result.tokens.join('\n');
+					outputText += '\n\nAST:\n' + result.ast;
+					output.textContent = outputText;
 				}
 				
 				repl.appendChild(output);
@@ -106,7 +109,20 @@ func (w *WebUI) ServeHTTP(res http.ResponseWriter, req *http.Request) {
 			return
 		}
 
-		json.NewEncoder(res).Encode(map[string]string{"output": fmt.Sprintf("%v", result)})
+		// 토큰화 결과 생성
+		tokens := lexer.Tokenize(data.Code)
+		tokenStrs := make([]string, len(tokens))
+		for i, token := range tokens {
+			tokenStrs[i] = fmt.Sprintf("%s: %q", token.Type, token.Value)
+		}
+
+		// 응답 데이터 구조 확장
+		response := map[string]interface{}{
+			"output": fmt.Sprintf("%v", result),
+			"tokens": tokenStrs,
+			"ast":    ast.String(),
+		}
+		json.NewEncoder(res).Encode(response)
 	default:
 		http.NotFound(res, req)
 	}
