@@ -43,12 +43,23 @@ func runTerminalUI() {
 			break
 		}
 
-		ast, err := parser.Parse(lexer.Tokenize(input))
+		// Lexer 과정 출력
+		tokens := lexer.Tokenize(input)
+		fmt.Println("Tokens:")
+		for _, token := range tokens {
+			fmt.Printf("  %s: %q\n", token.Type, token.Value)
+		}
+
+		// Parser 과정 출력
+		ast, err := parser.Parse(tokens)
 		if err != nil {
 			ui.PrintError(err.Error())
 			continue
 		}
+		fmt.Println("AST:")
+		fmt.Println(ast.String())
 
+		// Eval 과정
 		result, err := evaluator.Eval(ast)
 		if err != nil {
 			ui.PrintError(err.Error())

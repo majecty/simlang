@@ -14,6 +14,10 @@ type AST struct {
 	Root *LinesNode
 }
 
+func (ast *AST) String() string {
+	return fmt.Sprintf("AST:\n%s\n", ast.Root.String())
+}
+
 type LinesNode struct {
 	Lines []ASTNode
 }
